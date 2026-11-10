@@ -1,0 +1,88 @@
+===================================================================
+     🏛️ BẢO TÀNG LỊCH SỬ SỐ (1954 - 1975) — HỆ THỐNG PHIÊN BẢN KÉP
+===================================================================
+
+Dự án bao gồm 2 phân hệ hoạt động song song với cơ chế đồng bộ thời gian thực:
+1. BẢN NGƯỜI DÙNG (Tham Quan 3D):
+   - Địa chỉ: http://localhost:3000/?role=user (hoặc http://localhost:3000/)
+   - Tính năng: Không gian bảo tàng 3D Three.js chân thực, 18 khung tranh nổi khối, 5 bục hiện vật xoay 360 độ (Xe tăng 390, Mũ cối, Đài radio, Sa bàn Cầu Hiền Lương, Tập chỉ thị), màn hình TV tư liệu, nữ hướng dẫn viên AI Áo dài, và tự động phát âm thanh lồng tiếng của Admin.
+
+2. BẢN QUẢN TRỊ ADMIN (Dashboard & Phòng Thu Lồng Tiếng):
+   - Địa chỉ: http://localhost:3000/admin.html (hoặc truy cập qua ?role=admin, #admin)
+   - Tính năng:
+     + Sơ đồ phòng triển lãm 2D trực quan: Click vào từng vị trí khung/bục để sửa, hoán đổi vị trí, bật/tắt đèn rọi (SpotLight).
+     + Quản lý Khẩu hiệu theo hướng tường (Bắc, Nam, Đông, Tây, Trần nhà) với tùy chọn màu nền, màu chữ và nội dung.
+     + Chỉnh sửa tư liệu: Ảnh lịch sử, Đoạn phim ngắn, Bản đồ quân sự, Hiện vật 3D.
+     + PHÒNG THU LỒNG TIẾNG TRỰC TIẾP (Voiceover Studio): Thu âm micro trực tiếp với đồng hồ bấm giờ, nghe thử, thu lại, lưu file âm thanh hoặc tải file mp3/wav/ogg có sẵn từ máy tính.
+     + Đồng bộ thời gian thực (Zero-Reload Real-time Sync): Ngay khi Admin bấm "Lưu", Bản Người Dùng 3D tự động Hot-Swap toàn bộ ảnh, bảng chữ, đèn rọi và âm thanh mà KHÔNG làm gián đoạn vị trí người xem!
+
+===================================================================
+I. TIỆN ÍCH KHỞI CHẠY (FILE .BAT):
+===================================================================
+- Mở cả 2 giao diện: Nhấp đúp chuột vào file "⚡ 1_CHAY_NGAY.bat"
+- Mở riêng Bản Quản Trị Admin: Nhấp đúp vào "🏛️ MO_TRANG_QUAN_TRI_ADMIN.bat"
+- Mở riêng Bản Người Dùng 3D: Nhấp đúp vào "👁️ MO_BAO_TANG.bat"
+- Chạy offline không cần server: Mở trực tiếp file "BAO_TANG_LICH_SU_SO.html"
+
+===================================================================
+II. HƯỚNG DẪN THAO TÁC BẢN ADMIN:
+===================================================================
+1. Sơ đồ 2D:
+   - Click vào từng nút tròn/vuông trên sơ đồ để chọn khung cần chỉnh sửa.
+   - Nút chấm vàng góc trên thể hiện đèn rọi SpotLight đang bật hay tắt.
+   - Có thể chọn khung trong danh sách thả xuống để hoán đổi vị trí nhanh giữa 2 khung.
+
+2. Thay đổi Ảnh / Video:
+   - Bấm nút "Chọn File Từ Máy Tính" để tải ảnh mới (.png, .jpg, .webp) hoặc video (.mp4, .webm).
+   - Hệ thống tự động lưu vào thư mục media/uploads/ và hiển thị khung xem trước ngay lập tức.
+
+3. Thu âm lồng tiếng (Voiceover Studio):
+   - Bấm nút "Bắt Đầu Thu Âm", cho phép trình duyệt truy cập Microphone.
+   - Nói nội dung thuyết minh vào micro, đồng hồ đếm thời gian sẽ chạy.
+   - Bấm "Dừng Thu Âm" để hoàn tất. File ghi âm sẽ tự động lưu lên máy chủ và gán vào hiện vật.
+   - Bạn có thể bấm nút Play nghe thử hoặc tải lên file âm thanh (.mp3, .wav) có sẵn.
+   - Nếu có file lồng tiếng, Bản Người Dùng sẽ ưu tiên phát giọng này; nếu chưa có sẽ dùng giọng đọc AI TTS tự động.
+
+4. Lưu thay đổi:
+   - Bấm nút "Lưu Ngay & Đồng Bộ Sang Bản 3D".
+   - Tất cả các tab/máy đang mở Bản Người Dùng sẽ lập tức cập nhật dữ liệu mới và hiện thông báo Toast!
+
+===================================================================
+III. HƯỚNG DẪN THAM QUAN BẢN NGƯỜI DÙNG 3D:
+===================================================================
+- Kéo chuột trái: Xoay góc nhìn 360 độ ngắm tranh và không gian phòng triển lãm.
+- Phím WASD hoặc Mũi tên: Đi lại tiến, lùi, sang trái, sang phải trong phòng.
+- Màn hình cảm ứng: Vuốt 1 ngón tay để nhìn quanh; dùng phím ảo D-Pad ở góc phải bên dưới để di chuyển.
+- Xem hiện vật: Nhấp chuột vào bất kỳ khung tranh hoặc bục hiện vật để mở bảng thông tin và nghe thuyết minh lồng tiếng.
+- Toàn màn hình: Nhấn phím 'F' hoặc bấm nút "Toàn màn hình".
+
+===================================================================
+IV. HƯỚNG DẪN MỞ BẢO TÀNG TRÊN ĐIỆN THOẠI, IPAD & NHIỀU THIẾT BỊ:
+===================================================================
+1. CÁCH 1 (QUÉT MÃ QR - CÙNG MẠNG WI-FI):
+   - Bước 1: Kết nối điện thoại / iPad / máy tính bảng vào CÙNG MẠNG WI-FI với máy tính này.
+   - Bước 2: Bấm nút "📱 Mở Trên Điện Thoại / iPad" ở góc trên bên trái màn hình máy tính.
+   - Bước 3: Mở Camera điện thoại (iPhone hoặc Android) quét mã QR Code hiển thị trên màn hình.
+   - Hoặc gõ trực tiếp địa chỉ sau vào trình duyệt Safari / Chrome của điện thoại:
+     👉 http://192.168.1.18:3000/?role=user (Bản Tham Quan 3D)
+     👉 http://192.168.1.18:3000/admin.html (Bản Quản Trị Admin)
+
+2. CÁCH 2 (MỞ TRÊN NHIỀU MÁY TÍNH KHÁC TRONG PHÒNG MÁY / TRƯỜNG HỌC):
+   - Trên các máy tính khác trong cùng phòng mạng LAN, mở Chrome hoặc Edge và gõ:
+     http://192.168.1.18:3000
+
+3. CÁCH 3 (MỞ TỪ XA QUA 4G / INTERNET KHI KHÔNG CHUNG MẠNG WI-FI):
+   - Mở cửa sổ dòng lệnh PowerShell hoặc Command Prompt trên máy tính, chạy lệnh:
+     npx localtunnel --port 3000
+   - Hệ thống sẽ cấp cho bạn một đường link HTTPS công khai (ví dụ: https://baotang-1954-1975.loca.lt).
+   - Bạn có thể gửi đường link này cho thầy cô, học sinh hoặc bạn bè ở bất kỳ đâu để truy cập qua mạng 4G/Internet mà không cần chung Wi-Fi!
+
+===================================================================
+V. SA BÀN LỊCH SỬ STEM: "HAI MIỀN – MỘT KHÁT VỌNG THỐNG NHẤT":
+===================================================================
+Sa bàn trung tâm được đặt trang trọng giữa phòng triển lãm, tái hiện chân thực 4 không gian lịch sử:
+1. 🚩 MIỀN BẮC: Nhà máy thủy điện, khu công nghiệp, hậu phương lớn xã hội chủ nghĩa.
+2. 🚩 ĐƯỜNG TRƯỜNG SƠN: Tuyến vận tải quân sự chiến lược (Đoàn 559) với đoàn xe xẻ dọc non sông đi cứu nước.
+3. 🚩 MIỀN NAM: Tiền tuyến lớn anh hùng, đồng bằng sông Cửu Long, đoàn thuyền cắm cờ Giải phóng.
+4. 🚩 ẤP CHIẾN LƯỢC: Quốc sách gom dân của địch bị vây kín bởi hàng rào gai, chòi gác, xe bọc thép M113, trực thăng vũ trang và phong trào phá ấp chiến lược.
+5. Biển đồng chân đế sa bàn: Chạm khắc chữ vàng "HAI MIỀN – MỘT KHÁT VỌNG THỐNG NHẤT" cùng hoa sen vàng và dải đèn LED ấm chân đế.

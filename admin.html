@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Quản Trị Bảo Tàng Lịch Sử Số (1954 - 1975) - Admin Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%22><text y=%2222%22 font-size=%2220%22>🏛️</text></svg>">
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-panel: #131b2e;
+      --bg-panel-light: #1e293b;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --border-accent: rgba(245, 158, 11, 0.4);
+      --accent-gold: #f59e0b;
+      --accent-red: #e11d48;
+      --accent-blue: #3b82f6;
+      --accent-green: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: linear-gradient(180deg, #162035 0%, #0f172a 100%);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-icon {
+      font-size: 28px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--accent-gold);
+      padding: 6px 10px;
+      border-radius: 10px;
+    }
+    .brand-info h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 20px;
+      font-size: 12px;
+      color: #34d399;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.8; }
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-user-mode {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      color: #93c5fd;
+    }
+    .btn-user-mode:hover {
+      background: rgba(59, 130, 246, 0.3);
+      color: #fff;
+    }
+    .btn-save-all {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #000;
+      font-weight: 700;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+    }
+    .btn-save-all:hover {
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    /* Navigation Tabs */
+    .tabs-bar {
+      background: var(--bg-panel);
+      padding: 0 24px;
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: #fff; }
+    .tab-btn.active {
+      color: var(--accent-gold);
+    }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-gold);
+      border-radius: 3px 3px 0 0;
+      box-shadow: 0 0 8px var(--accent-gold);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      padding: 24px;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 2D Floor Plan Styles */
+    .floorplan-container {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .floorplan-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .hall-map {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+      border: 2px dashed rgba(245, 158, 11, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    /* Wall Labels on 2D map */
+    .wall-label {
+      position: absolute;
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 4px 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      z-index: 5;
+    }
+    .wall-north { top: 8px; }
+    .wall-south { bottom: 8px; }
+    .wall-east { right: 8px; writing-mode: vertical-rl; }
+    .wall-west { left: 8px; writing-mode: vertical-rl; }
+
+    /* Map Slot Nodes */
+    .slot-node {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      background: #1e293b;
+      border: 2px solid #64748b;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      z-index: 10;
+    }
+    .slot-node:hover {
+      transform: scale(1.15);
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+      z-index: 20;
+    }
+    .slot-node.active {
+      border-color: var(--accent-gold);
+      background: linear-gradient(135deg, #d97706, #b45309);
+      box-shadow: 0 0 20px var(--accent-gold);
+    }
+    .slot-node.diorama-node {
+      width: 90px;
+      height: 54px;
+      border-color: #f59e0b;
+      background: linear-gradient(135deg, #78350f, #451a03);
+      border-radius: 12px;
+      border-width: 2px;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+    }
+    .slot-node.diorama-node.active {
+      border-color: #fde047;
+      background: linear-gradient(135deg, #b45309, #78350f);
+      box-shadow: 0 0 24px rgba(253, 224, 71, 0.8);
+    }
+    .slot-node.pedestal {
+      border-radius: 50%;
+      border-color: #3b82f6;
+      background: #172554;
+    }
+    .slot-node.pedestal.active {
+      border-color: #60a5fa;
+      background: #2563eb;
+    }
+    .slot-node.tv-node {
+      width: 70px;
+      height: 44px;
+      border-color: #ef4444;
+      background: #450a0a;
+      border-radius: 6px;
+    }
+    .spotlight-indicator {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+    .spotlight-indicator.on {
+      background: #facc15;
+      box-shadow: 0 0 8px #facc15;
+    }
+
+    /* Grid & Cards View */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 24px 0 16px 0;
+    }
+    .section-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .filter-tags {
+      display: flex;
+      gap: 8px;
+    }
+    .filter-tag {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-tag.active {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+
+    .exhibits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .exhibit-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .exhibit-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    .exhibit-card.selected {
+      border-color: var(--accent-gold);
+      background: rgba(245, 158, 11, 0.05);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .slot-badge {
+      background: #334155;
+      color: #f1f5f9;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .media-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .media-badge.image { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .media-badge.video { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .media-badge.model { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+
+    .card-thumb {
+      width: 100%;
+      height: 140px;
+      border-radius: 8px;
+      background: #0f172a;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .card-thumb img, .card-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .voiceover-pill {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .voiceover-pill.recorded {
+      border-color: #10b981;
+      color: #34d399;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 42px;
+    }
+    .card-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Modal / Edit Studio View */
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 1024px) {
+      .editor-layout { grid-template-columns: 1fr; }
+    }
+
+    .editor-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .card-heading {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-gold);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Form Fields */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+    .form-control {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    }
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Voiceover Studio Box */
+    .voiceover-box {
+      background: linear-gradient(135deg, rgba(225, 29, 72, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%);
+      border: 1px solid rgba(225, 29, 72, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .recording-hud {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 12px 16px;
+      border-radius: 8px;
+    }
+    .timer-display {
+      font-family: monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: #f43f5e;
+    }
+    .btn-record {
+      background: #e11d48;
+      color: #fff;
+      border-radius: 50px;
+      padding: 8px 20px;
+    }
+    .btn-record.recording {
+      animation: pulse-red 1s infinite;
+      background: #9f1239;
+    }
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); }
+      70% { box-shadow: 0 0 0 14px rgba(225, 29, 72, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+    }
+
+    /* Live Preview Pane */
+    .preview-box {
+      width: 100%;
+      height: 280px;
+      background: #090d16;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .preview-box img, .preview-box video {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* Wall Banners Editor */
+    .banner-editor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+      gap: 20px;
+    }
+    .banner-preview-strip {
+      padding: 16px 24px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      margin-top: 10px;
+    }
+    .color-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .color-picker-input {
+      width: 44px;
+      height: 38px;
+      padding: 0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Switch toggle */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #334155;
+      transition: .3s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute; content: "";
+      height: 18px; width: 18px;
+      left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--accent-gold); }
+    input:checked + .slider:before { transform: translateX(20px); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🏛️</div>
+      <div class="brand-info">
+        <h1>BẢO TÀNG LỊCH SỬ SỐ (1954 - 1975)</h1>
+        <p>Hệ Thống Quản Trị Nội Dung, Khung Triển Lãm & Phòng Thu Lồng Tiếng AI</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="sync-status" id="sseStatus">
+        <span class="pulse-dot"></span>
+        <span>Real-time Sync Sẵn Sàng</span>
+      </div>
+      <div class="sync-status" id="visitorStatus" style="background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-weight: 700;">
+        <span>👥 Trực Tuyến: <strong id="adminVisitorCount" style="color: #ffffff;">1</strong> người</span>
+      </div>
+      <a href="./?role=user" target="_blank" class="btn btn-user-mode">
+        <span>👁️ Xem Bản Người Dùng 3D</span>
+      </a>
+      <button class="btn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399;" onclick="openAdminQrModal()">
+        <span>📱 Mở Trên Điện Thoại (QR)</span>
+      </button>
+      <a href="/download" download="BaoTangLichSuSo_3D_Full.zip" class="btn" style="background: rgba(37, 99, 235, 0.25); border: 1px solid #3b82f6; color: #93c5fd; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Tải toàn bộ file zip dự án về máy">
+        <span>⬇️ Tải Gói Dự Án ZIP</span>
+      </a>
+      <button class="btn btn-save-all" id="btnSaveAllTop" onclick="saveAllMuseumData()">
+        <span>💾 Lưu & Đồng Bộ Tức Thì</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('floorplan')">🗺️ Sơ Đồ Triển Lãm 2D & Vị Trí Khung</button>
+    <button class="tab-btn" onclick="switchTab('studio')">🎙️ Chi Tiết Hiện Vật & Studio Lồng Tiếng</button>
+    <button class="tab-btn" onclick="switchTab('banners')">🚩 Khẩu Hiệu Bức Tường & Trần Nhà</button>
+  </div>
+
+  <main>
+    <!-- TAB 1: SƠ ĐỒ TRIỂN LÃM 2D -->
+    <div id="tab-floorplan" class="tab-content active">
+      <div class="floorplan-container">
+        <div class="floorplan-title">
+          <div>
+            <h3>Sơ Đồ Phòng Triển Lãm 2D Trực Quan</h3>
+            <p style="color: var(--text-muted); font-size: 13px;">Click trực tiếp vào từng vị trí khung tranh/hiện vật để chọn, chỉnh sửa hoặc bật/tắt đèn rọi</p>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: center; font-size: 12px; color: var(--text-muted);">
+            <span>🟡 Khung Đang Bật Đèn Rọi</span>
+            <span>🔵 Bục Hiện Vật 3D (P1-P5)</span>
+            <span>🔴 Màn Hình Phim Tư Liệu</span>
+          </div>
+        </div>
+
+        <!-- 2D Interactive Map Canvas/DOM -->
+        <div class="hall-map" id="hallMap">
+          <!-- Wall Labels -->
+          <div class="wall-label wall-north">TƯỜNG BẮC (1954 - 1960)</div>
+          <div class="wall-label wall-south">TƯỜNG NAM (TỔNG KẾT 1954 - 1975)</div>
+          <div class="wall-label wall-east">TƯỜNG ĐÔNG (1961 - 1972)</div>
+          <div class="wall-label wall-west">TƯỜNG TÂY (CHIẾN DỊCH HỒ CHÍ MINH 1975)</div>
+
+          <!-- Dynamic Slots injected by JS -->
+        </div>
+      </div>
+
+      <!-- Exhibits Card Grid -->
+      <div class="section-header">
+        <h2>
+          <span>📋 Danh Sách Khung Trưng Bày & Bục Hiện Vật</span>
+          <span style="font-size: 13px; font-weight: normal; color: var(--text-muted);" id="exhibitCount">(24 vị trí)</span>
+        </h2>
+        <div class="filter-tags">
+          <button class="filter-tag active" onclick="filterExhibits('all', this)">Tất cả</button>
+          <button class="filter-tag" onclick="filterExhibits('north', this)">Tường Bắc</button>
+          <button class="filter-tag" onclick="filterExhibits('east', this)">Tường Đông</button>
+          <button class="filter-tag" onclick="filterExhibits('west', this)">Tường Tây</button>
+          <button class="filter-tag" onclick="filterExhibits('south', this)">Tường Nam</button>
+          <button class="filter-tag" onclick="filterExhibits('pedestal', this)">Bục 3D & TV</button>
+        </div>
+      </div>
+
+      <div class="exhibits-grid" id="exhibitsGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- TAB 2: CHI TIẾT HIỆN VẬT & VOICE-OVER STUDIO -->
+    <div id="tab-studio" class="tab-content">
+      <div class="editor-layout">
+        
+        <!-- Left: Selected Exhibit Overview & Media Preview -->
+        <div class="editor-card">
+          <div class="card-heading">
+            <span id="previewHeading">Khung Tranh #1</span>
+            <span class="slot-badge" id="previewSlotBadge">Slot 1</span>
+          </div>
+
+          <!-- Media Preview Box -->
+          <div class="preview-box" id="mediaPreviewContainer">
+            <img id="imagePreview" src="" alt="Xem trước ảnh" style="display: none;">
+            <video id="videoPreview" src="" controls style="display: none;"></video>
+            <div id="previewPlaceholder" style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px;">
+              Chọn hoặc tải lên tư liệu để xem trước
+            </div>
+          </div>
+
+          <!-- Quick Info Details -->
+          <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; font-size: 12px; display: flex; flex-direction: column; gap: 6px;">
+            <div><strong>Tọa độ 3D:</strong> <span id="infoCoords">X: -8.4 | Y: 2.1 | Z: -9.88</span></div>
+            <div><strong>Trạng thái Lồng tiếng:</strong> <span id="infoVoiceoverStatus" style="color: #34d399;">Chưa có</span></div>
+            <div><strong>Đèn Rọi (SpotLight):</strong> <span id="infoSpotlightStatus">Đang bật</span></div>
+          </div>
+
+          <!-- Quick Select Dropdown -->
+          <div class="form-group">
+            <label>Chuyển Nhanh Vị Trí Muốn Sửa:</label>
+            <select class="form-control" id="selectExhibitDropdown" onchange="onSelectExhibitDropdown(this.value)">
+              <!-- Options populated by JS -->
+            </select>
+          </div>
+
+          <!-- Hoán đổi vị trí -->
+          <div style="border-top: 1px dashed var(--border-color); padding-top: 14px;">
+            <label style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display: block;">Hoán Đổi Vị Trí Trưng Bày Với Khung Khác:</label>
+            <div style="display: flex; gap: 8px;">
+              <select class="form-control" id="swapTargetDropdown" style="font-size: 12px;">
+                <!-- Target options populated by JS -->
+              </select>
+              <button class="btn" style="background: #334155; color: #fff; font-size: 12px;" onclick="swapCurrentExhibitWithTarget()">Đổi</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Edit Form & Voiceover Studio -->
+        <div class="editor-card">
+          <div class="card-heading">
+            <span>Chỉnh Sửa Thông Tin & Tư Liệu Lịch Sử</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; color: #cbd5e1;">Bật Đèn Rọi</span>
+              <label class="switch">
+                <input type="checkbox" id="fieldSpotlight" onchange="updateCurrentExhibitField('spotlightEnabled', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Form Fields Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 140px; gap: 14px;">
+            <div class="form-group">
+              <label>Tên Hiện Vật / Tiêu Đề Tác Phẩm (*):</label>
+              <input type="text" class="form-control" id="fieldTitle" oninput="updateCurrentExhibitField('title', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Năm Lịch Sử:</label>
+              <input type="text" class="form-control" id="fieldYear" placeholder="Ví dụ: 1954" oninput="updateCurrentExhibitField('year', this.value)">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 180px; gap: 14px;">
+            <div class="form-group">
+              <label>Tác Giả / Nguồn Tư Liệu:</label>
+              <input type="text" class="form-control" id="fieldAuthor" placeholder="Bảo tàng Lịch sử Quân sự Việt Nam..." oninput="updateCurrentExhibitField('author', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Loại Tư Liệu:</label>
+              <select class="form-control" id="fieldMediaType" onchange="updateCurrentExhibitField('mediaType', this.value)">
+                <option value="image">Ảnh lịch sử (Image)</option>
+                <option value="video">Đoạn phim ngắn (Video)</option>
+                <option value="map">Bản đồ quân sự (Map)</option>
+                <option value="model">Hiện vật 3D (Model)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Mô Tả Tóm Tắt (Hiển thị ngay trên bảng dưới khung tranh 3D):</label>
+            <textarea class="form-control" id="fieldShortDesc" rows="2" oninput="updateCurrentExhibitField('shortDescription', this.value)"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Nội Dung Thuyết Minh Chi Tiết (Khi khách bấm vào hiện vật):</label>
+            <textarea class="form-control" id="fieldHistoryContent" rows="3" oninput="updateCurrentExhibitField('historicalContent', this.value)"></textarea>
+          </div>
+
+          <!-- Media File Upload -->
+          <div class="form-group">
+            <label>Tải Lên File Tư Liệu (Ảnh .png, .jpg, .webp hoặc Video .mp4, .webm):</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="file" id="mediaFileInput" accept="image/*,video/*" style="display: none;" onchange="handleMediaFileUpload(this)">
+              <button class="btn" style="background: #2563eb; color: #fff;" onclick="document.getElementById('mediaFileInput').click()">
+                📁 Chọn File Từ Máy Tính
+              </button>
+              <input type="text" class="form-control" id="fieldMediaUrl" placeholder="Hoặc nhập đường dẫn URL..." oninput="updateCurrentExhibitField('mediaUrl', this.value); refreshMediaPreview();">
+            </div>
+          </div>
+
+          <!-- KHO TƯ LIỆU LỊCH SỬ (KHU 1 & KHU 3 - 61 ẢNH & VIDEO) -->
+          <div style="margin: 12px 0 16px 0; background: #0f172a; border: 1.5px solid #059669; border-radius: 10px; padding: 12px; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">🏛️</span>
+                <strong style="color: #34d399; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">Kho Tư Liệu Lịch Sử (Khu 1 & Khu 3 - 61 Ảnh & Video)</strong>
+              </div>
+              <button type="button" id="btnToggleKhu1Gallery" class="btn" style="background: #059669; color: #fff; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 6px;" onclick="toggleKhu1Gallery()">
+                ▼ Mở Thư Viện Chọn Nhanh (61)
+              </button>
+            </div>
+            
+            <div id="khu1GalleryPanel" style="display: none; margin-top: 10px;">
+              <!-- BỘ LỌC KHU VỰC / CHUYÊN ĐỀ -->
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+                <button type="button" class="btn" id="filterPillAll" onclick="setMediaFilterZone('all')" style="font-size: 11px; padding: 4px 10px; border-radius: 14px; background: #059669; color: #fff; border: 1px solid #10b981;">Tất cả (61)</button>
+                <button type="button" class="btn" id="filterPillKhu3" onclick="setMediaFilterZone('khu3')" style="font-size: 11px; padding: 4px 10px; border-radius: 14px; background: #1e293b; color: #38bdf8; border: 1px solid #0284c7;">⭐ Khu 3: An Lão, Ba Gia, Đồng Xoài (16)</button>
+                <button type="button" class="btn" id="filterPillKhu1" onclick="setMediaFilterZone('khu1')" style="font-size: 11px; padding: 4px 10px; border-radius: 14px; background: #1e293b; color: #cbd5e1; border: 1px solid #475569;">Khu 1: Kháng Chiến (44)</button>
+                <button type="button" class="btn" id="filterPillApBac" onclick="setMediaFilterZone('ap_bac')" style="font-size: 11px; padding: 4px 10px; border-radius: 14px; background: #1e293b; color: #f59e0b; border: 1px solid #d97706;">Trận Ấp Bắc</button>
+                <button type="button" class="btn" id="filterPillVideo" onclick="setMediaFilterZone('video')" style="font-size: 11px; padding: 4px 10px; border-radius: 14px; background: #1e293b; color: #f43f5e; border: 1px solid #e11d48;">Video Trực Quan (1)</button>
+              </div>
+
+              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <input type="text" id="khu1SearchInput" placeholder="🔍 Tìm kiếm tư liệu (Ấp Bắc, An Lão, Ba Gia, Đồng Xoài, Bác Hồ, xe tăng, cố vấn...)..." style="flex: 1; padding: 7px 12px; background: #1e293b; border: 1px solid #475569; border-radius: 6px; color: #f8fafc; font-size: 12px;" oninput="filterKhu1Gallery(this.value)">
+                <button type="button" class="btn" style="background: #334155; color: #f8fafc; font-size: 11px; padding: 6px 12px;" onclick="document.getElementById('khu1SearchInput').value=''; setMediaFilterZone('all'); filterKhu1Gallery('');">
+                  Xóa Lọc
+                </button>
+              </div>
+
+              <div id="khu1GalleryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-height: 360px; overflow-y: auto; padding-right: 4px;">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- VOICE-OVER STUDIO -->
+          <div class="voiceover-box">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h4 style="color: #f43f5e; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                  🎙️ PHÒNG THU LỒNG TIẾNG TRỰC TIẾP (VOICEOVER STUDIO)
+                </h4>
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                  Ghi âm giọng nói trực tiếp qua Micro hoặc tải file âm thanh (.mp3, .wav). Bản Người Dùng sẽ ưu tiên phát giọng lồng tiếng này!
+                </p>
+              </div>
+              <div id="voiceoverBadge" style="font-size: 11px; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,0.1);">
+                Dùng giọng đọc TTS tự động
+              </div>
+            </div>
+
+            <!-- Recording HUD -->
+            <div class="recording-hud">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="btn btn-record" id="btnRecord" onclick="toggleRecording()">
+                  <span id="recordIcon">⏺️</span>
+                  <span id="recordText">Bắt Đầu Thu Âm</span>
+                </button>
+                <div class="timer-display" id="recordTimer">00:00</div>
+              </div>
+
+              <!-- Audio Upload Alternative -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="file" id="audioFileInput" accept="audio/*" style="display: none;" onchange="handleAudioFileUpload(this)">
+                <button class="btn" style="background: #334155; color: #cbd5e1; font-size: 12px;" onclick="document.getElementById('audioFileInput').click()">
+                  🎵 Tải File Âm Thanh Có Sẵn
+                </button>
+              </div>
+            </div>
+
+            <!-- Voiceover Player & Save Actions -->
+            <div id="voiceoverPlayerRow" style="display: flex; flex-direction: column; gap: 10px;">
+              <audio id="voiceoverAudioPlayer" controls style="width: 100%; height: 40px; border-radius: 6px;"></audio>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="audioFileNameDisplay" style="font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; max-width: 350px;">
+                  Chưa có file âm thanh
+                </span>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn" style="background: #475569; color: #fff; font-size: 11px;" id="btnResetVoiceover" onclick="clearVoiceover()">
+                    🗑️ Xóa Lồng Tiếng (Về TTS)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+            <button class="btn btn-save-all" onclick="saveAllMuseumData()">
+              💾 Lưu Ngay & Đồng Bộ Sang Bản 3D
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: KHẨU HIỆU BỨC TƯỜNG & TRẦN NHÀ -->
+    <div id="tab-banners" class="tab-content">
+      <div style="margin-bottom: 20px;">
+        <h3>Quản Lý Khẩu Hiệu Bức Tường (North, South, East, West) & Trần Nhà</h3>
+        <p style="color: var(--text-muted); font-size: 13px;">Nội dung và màu sắc sẽ được cập nhật trực tiếp trên các biển hiệu 3D lớn trong bảo tàng</p>
+      </div>
+
+      <div class="banner-editor-grid" id="bannersEditorContainer">
+        <!-- Rendered by JS for North, South, East, West, Ceiling -->
+      </div>
+
+      <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-save-all" onclick="saveAllMuseumData()">
+          💾 Lưu Cập Nhật Khẩu Hiệu & Đồng Bộ 3D
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast">
+    <span>✅</span>
+    <span id="toastMessage">Đã lưu và đồng bộ dữ liệu thời gian thực!</span>
+  </div>
+
+  <script>
+    // Global State
+    let museumData = null;
+    let selectedExhibitId = 'exhibit-1';
+    let currentFilter = 'all';
+
+    // BroadcastChannel for instant client-side cross-tab sync
+    const syncChannel = new BroadcastChannel('museum_sync_channel');
+
+    // MediaRecorder state
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordStartTime = 0;
+    let recordTimerInterval = null;
+    let isRecording = false;
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadMuseumData();
+      initSSE();
+      setupBroadcastListener();
+    });
+
+    // 1. Fetch Museum Data from API
+    async function loadMuseumData() {
+      try {
+        const res = await fetch('/api/exhibits');
+        if (res.ok) {
+          museumData = await res.json();
+          console.log('[DATA] Đã nạp dữ liệu bảo tàng thành công:', museumData);
+          renderAll();
+        } else {
+          showToast('Không thể tải museum-data.json từ server', true);
+        }
+      } catch (err) {
+        console.error('Lỗi nạp dữ liệu:', err);
+        // Fallback to localStorage if offline
+        const local = localStorage.getItem('museum_data_cache');
+        if (local) {
+          museumData = JSON.parse(local);
+          renderAll();
+        }
+      }
+    }
+
+    // 2. Real-time SSE Connection
+    function initSSE() {
+      try {
+        const evtSource = new EventSource('/api/events');
+        const statusEl = document.getElementById('sseStatus');
+
+        evtSource.onopen = () => {
+          statusEl.innerHTML = '<span class="pulse-dot"></span><span>Real-time Sync: ĐÃ KẾT NỐI</span>';
+          statusEl.style.color = '#34d399';
+        };
+
+        evtSource.addEventListener('MUSEUM_UPDATED', (e) => {
+          console.log('[SSE] Nhận cập nhật từ server:', e.data);
+          try {
+            const freshData = JSON.parse(e.data);
+            if (freshData.lastUpdated !== museumData?.lastUpdated) {
+              museumData = freshData;
+              renderAll();
+              showToast('🔔 Dữ liệu bảo tàng vừa được cập nhật!');
+            }
+          } catch (err) {}
+        });
+
+        evtSource.addEventListener('VISITOR_COUNT', (e) => {
+          try {
+            const freshData = JSON.parse(e.data);
+            const countEl = document.getElementById('adminVisitorCount');
+            if (countEl && freshData && typeof freshData.count === 'number') {
+              countEl.textContent = freshData.count;
+            }
+          } catch (err) {}
+        });
+
+        evtSource.onerror = () => {
+          statusEl.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;"></span><span>Kết nối lại...</span>';
+          statusEl.style.color = '#fbbf24';
+        };
+      } catch (err) {
+        console.warn('SSE không khả dụng:', err);
+      }
+    }
+
+    function setupBroadcastListener() {
+      syncChannel.onmessage = (event) => {
+        if (event.data && event.data.type === 'MUSEUM_UPDATED') {
+          console.log('[BROADCAST] Nhận dữ liệu từ tab khác:', event.data);
+          museumData = event.data.data;
+          renderAll();
+        }
+      };
+    }
+
+    // 3. Render All Views
+    function renderAll() {
+      if (!museumData) return;
+      renderFloorPlan();
+      renderExhibitsGrid();
+      populateDropdowns();
+      renderSelectedExhibitDetails();
+      renderBannersEditor();
+    }
+
+    // 4. Render 2D Floor Plan
+    function renderFloorPlan() {
+      const hallMap = document.getElementById('hallMap');
+      // Keep wall labels
+      const labels = hallMap.querySelectorAll('.wall-label');
+      hallMap.innerHTML = '';
+      labels.forEach(l => hallMap.appendChild(l));
+
+      const exhibits = museumData.exhibits || [];
+      const mapW = hallMap.clientWidth || 900;
+      const mapH = hallMap.clientHeight || 480;
+
+      // Coordinate mapping from 3D meters to 2D %
+      // 3D Room size roughly: X from -10 to +10, Z from -10 to +10
+      exhibits.forEach(ex => {
+        const node = document.createElement('div');
+        node.className = `slot-node ${ex.id.startsWith('pedestal') ? 'pedestal' : ''} ${ex.id === 'diorama-center' ? 'diorama-node' : ''} ${ex.id === selectedExhibitId ? 'active' : ''}`;
+        node.id = `node-${ex.id}`;
+
+        // Map 3D x, z to 2D percentage (X: -10..10 -> 8%..92%, Z: -10..10 -> 8%..92%)
+        const leftPercent = ((ex.x + 10) / 20) * 84 + 8;
+        const topPercent = ((ex.z + 10) / 20) * 84 + 8;
+
+        node.style.left = `${leftPercent}%`;
+        node.style.top = `${topPercent}%`;
+        node.style.transform = 'translate(-50%, -50%)';
+
+        node.innerHTML = `
+          <span>${ex.slot}</span>
+          <span class="spotlight-indicator ${ex.spotlightEnabled ? 'on' : ''}"></span>
+        `;
+        node.title = `${ex.title} (Click để sửa)`;
+
+        node.onclick = () => {
+          selectExhibit(ex.id);
+          switchTab('studio');
+        };
+
+        hallMap.appendChild(node);
+      });
+
+      // Add TV station node
+      if (museumData.videoStation) {
+        const tv = museumData.videoStation;
+        const tvNode = document.createElement('div');
+        tvNode.className = `slot-node tv-node ${selectedExhibitId === 'tv-station-main' ? 'active' : ''}`;
+        tvNode.style.left = '50%';
+        tvNode.style.top = '12%';
+        tvNode.style.transform = 'translate(-50%, -50%)';
+        tvNode.innerHTML = `<span>📺 TV</span>`;
+        tvNode.title = tv.title;
+        tvNode.onclick = () => {
+          selectExhibit('tv-station-main');
+          switchTab('studio');
+        };
+        hallMap.appendChild(tvNode);
+      }
+    }
+
+    // 5. Render Exhibits Grid
+    function renderExhibitsGrid() {
+      const grid = document.getElementById('exhibitsGrid');
+      grid.innerHTML = '';
+
+      const exhibits = museumData.exhibits || [];
+      const filtered = exhibits.filter(ex => {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'pedestal') return ex.id.startsWith('pedestal');
+        return ex.wall === currentFilter;
+      });
+
+      document.getElementById('exhibitCount').textContent = `(${filtered.length} vị trí)`;
+
+      filtered.forEach(ex => {
+        const card = document.createElement('div');
+        card.className = `exhibit-card ${ex.id === selectedExhibitId ? 'selected' : ''}`;
+        card.onclick = () => {
+          selectExhibit(ex.id);
+          switchTab('studio');
+        };
+
+        const hasVoiceover = Boolean(ex.voiceoverUrl && ex.voiceoverUrl.trim());
+
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="slot-badge">Khung ${ex.slot}</span>
+            <span class="media-badge ${ex.mediaType || 'image'}">${ex.mediaType || 'image'}</span>
+          </div>
+          <div class="card-thumb">
+            ${(ex.mediaType === 'video' || (ex.mediaUrl && ex.mediaUrl.endsWith('.mp4'))) 
+              ? `<video src="${ex.mediaUrl}#t=0.5"></video>` 
+              : `<img src="${ex.mediaUrl || './media/TI_T_1_B_I_8-image1.png'}" onerror="this.src='./media/TI_T_1_B_I_8-image1.png'" alt="${ex.title}">`
+            }
+            <div class="voiceover-pill ${hasVoiceover ? 'recorded' : ''}">
+              ${hasVoiceover ? '🎙️ Có lồng tiếng' : '🤖 TTS tự động'}
+            </div>
+          </div>
+          <div class="card-title">${ex.title}</div>
+          <div class="card-meta">
+            <span>Năm: ${ex.year || '1954-1975'}</span>
+            <span>💡 ${ex.spotlightEnabled ? 'Đèn BẬT' : 'Đèn TẮT'}</span>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    // 6. Populate Dropdowns
+    function populateDropdowns() {
+      const selectDrop = document.getElementById('selectExhibitDropdown');
+      const swapDrop = document.getElementById('swapTargetDropdown');
+
+      selectDrop.innerHTML = '';
+      swapDrop.innerHTML = '';
+
+      const exhibits = museumData.exhibits || [];
+      exhibits.forEach(ex => {
+        const opt1 = document.createElement('option');
+        opt1.value = ex.id;
+        opt1.textContent = `[Slot ${ex.slot}] ${ex.title}`;
+        if (ex.id === selectedExhibitId) opt1.selected = true;
+        selectDrop.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = ex.id;
+        opt2.textContent = `[Slot ${ex.slot}] ${ex.title}`;
+        swapDrop.appendChild(opt2);
+      });
+
+      // Add TV station
+      if (museumData.videoStation) {
+        const opt = document.createElement('option');
+        opt.value = 'tv-station-main';
+        opt.textContent = `[Màn hình TV] ${museumData.videoStation.title}`;
+        if (selectedExhibitId === 'tv-station-main') opt.selected = true;
+        selectDrop.appendChild(opt);
+      }
+    }
+
+    // 7. Render Selected Exhibit Details
+    function renderSelectedExhibitDetails() {
+      if (!museumData) return;
+      let ex = museumData.exhibits.find(e => e.id === selectedExhibitId);
+      if (!ex && selectedExhibitId === 'tv-station-main') {
+        ex = museumData.videoStation;
+      }
+      if (!ex) return;
+
+      document.getElementById('previewHeading').textContent = ex.title || 'Hiện vật';
+      document.getElementById('previewSlotBadge').textContent = `Slot ${ex.slot || 'TV'}`;
+      document.getElementById('selectExhibitDropdown').value = selectedExhibitId;
+
+      document.getElementById('fieldTitle').value = ex.title || '';
+      document.getElementById('fieldYear').value = ex.year || '';
+      document.getElementById('fieldAuthor').value = ex.author || '';
+      document.getElementById('fieldShortDesc').value = ex.shortDescription || '';
+      document.getElementById('fieldHistoryContent').value = ex.historicalContent || '';
+      document.getElementById('fieldMediaType').value = ex.mediaType || 'image';
+      document.getElementById('fieldMediaUrl').value = ex.mediaUrl || ex.videoUrl || '';
+      document.getElementById('fieldSpotlight').checked = Boolean(ex.spotlightEnabled);
+
+      document.getElementById('infoCoords').textContent = `X: ${ex.x || 0} | Y: ${ex.y || 0} | Z: ${ex.z || 0}`;
+      document.getElementById('infoSpotlightStatus').textContent = ex.spotlightEnabled ? 'Đang BẬT' : 'Đang TẮT';
+
+      refreshMediaPreview();
+      refreshVoiceoverUI(ex);
+    }
+
+    function refreshMediaPreview() {
+      let ex = museumData.exhibits.find(e => e.id === selectedExhibitId) || museumData.videoStation;
+      if (!ex) return;
+
+      const mediaUrl = ex.mediaUrl || ex.videoUrl || '';
+      const mediaType = ex.mediaType || 'image';
+
+      const imgEl = document.getElementById('imagePreview');
+      const vidEl = document.getElementById('videoPreview');
+      const placeholder = document.getElementById('previewPlaceholder');
+
+      if (!mediaUrl) {
+        imgEl.style.display = 'none';
+        vidEl.style.display = 'none';
+        placeholder.style.display = 'block';
+        return;
+      }
+
+      placeholder.style.display = 'none';
+
+      if (mediaType === 'video' || mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.webm')) {
+        imgEl.style.display = 'none';
+        vidEl.style.display = 'block';
+        vidEl.src = mediaUrl;
+      } else {
+        vidEl.style.display = 'none';
+        imgEl.style.display = 'block';
+        imgEl.src = mediaUrl;
+      }
+    }
+
+    function refreshVoiceoverUI(ex) {
+      const badge = document.getElementById('voiceoverBadge');
+      const statusText = document.getElementById('infoVoiceoverStatus');
+      const audioPlayer = document.getElementById('voiceoverAudioPlayer');
+      const fileNameDisplay = document.getElementById('audioFileNameDisplay');
+
+      if (ex.voiceoverUrl && ex.voiceoverUrl.trim()) {
+        badge.textContent = '✅ Đã có file Lồng tiếng của Admin';
+        badge.style.background = 'rgba(16, 185, 129, 0.2)';
+        badge.style.color = '#34d399';
+        statusText.textContent = 'Đã có giọng lồng tiếng Admin';
+        statusText.style.color = '#34d399';
+
+        audioPlayer.src = ex.voiceoverUrl;
+        audioPlayer.style.display = 'block';
+        fileNameDisplay.textContent = `File: ${ex.voiceoverUrl}`;
+      } else {
+        badge.textContent = '🤖 Chưa lồng tiếng (Dùng TTS tự động)';
+        badge.style.background = 'rgba(255, 255, 255, 0.1)';
+        badge.style.color = '#94a3b8';
+        statusText.textContent = 'TTS tự động';
+        statusText.style.color = '#94a3b8';
+
+        audioPlayer.src = '';
+        fileNameDisplay.textContent = 'Chưa có file âm thanh ghi âm';
+      }
+    }
+
+    // 8. Select Exhibit
+    function selectExhibit(id) {
+      selectedExhibitId = id;
+      renderAll();
+    }
+
+    function onSelectExhibitDropdown(id) {
+      selectedExhibitId = id;
+      renderAll();
+    }
+
+    // 9. Update Exhibit Field
+    function updateCurrentExhibitField(field, value) {
+      let ex = museumData.exhibits.find(e => e.id === selectedExhibitId);
+      if (!ex && selectedExhibitId === 'tv-station-main') {
+        ex = museumData.videoStation;
+      }
+      if (ex) {
+        ex[field] = value;
+      }
+    }
+
+    // 10. Swap Exhibits
+    function swapCurrentExhibitWithTarget() {
+      const targetId = document.getElementById('swapTargetDropdown').value;
+      if (targetId === selectedExhibitId) {
+        alert('Vui lòng chọn vị trí khác để hoán đổi!');
+        return;
+      }
+
+      const ex1 = museumData.exhibits.find(e => e.id === selectedExhibitId);
+      const ex2 = museumData.exhibits.find(e => e.id === targetId);
+
+      if (ex1 && ex2) {
+        // Swap slot properties while preserving coordinates
+        const tempX = ex1.x, tempY = ex1.y, tempZ = ex1.z, tempWall = ex1.wall, tempSlot = ex1.slot, tempRotY = ex1.rotY;
+        ex1.x = ex2.x; ex1.y = ex2.y; ex1.z = ex2.z; ex1.wall = ex2.wall; ex1.slot = ex2.slot; ex1.rotY = ex2.rotY;
+        ex2.x = tempX; ex2.y = tempY; ex2.z = tempZ; ex2.wall = tempWall; ex2.slot = tempSlot; ex2.rotY = tempRotY;
+
+        renderAll();
+        showToast(`Đã hoán đổi vị trí giữa ${ex1.title} và ${ex2.title}`);
+      }
+    }
+
+    // 11. Handle Media File Upload (Image / Video)
+    async function handleMediaFileUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          showToast('Đang tải file tư liệu lên server...');
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: file.name,
+              fileData: e.target.result
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            updateCurrentExhibitField('mediaUrl', data.url);
+            document.getElementById('fieldMediaUrl').value = data.url;
+
+            // Auto detect video
+            if (file.type.startsWith('video/')) {
+              updateCurrentExhibitField('mediaType', 'video');
+              document.getElementById('fieldMediaType').value = 'video';
+            } else {
+              updateCurrentExhibitField('mediaType', 'image');
+              document.getElementById('fieldMediaType').value = 'image';
+            }
+
+            refreshMediaPreview();
+            renderExhibitsGrid();
+            showToast('✅ Tải tư liệu lên thành công!');
+          } else {
+            showToast('Lỗi khi tải file lên server', true);
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Lỗi tải file: ' + err.message, true);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 12. Handle Audio Upload (Voiceover File)
+    async function handleAudioFileUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          showToast('Đang tải file lồng tiếng lên server...');
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: `voiceover_${selectedExhibitId}_${file.name}`,
+              fileData: e.target.result
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            updateCurrentExhibitField('voiceoverUrl', data.url);
+            
+            let ex = museumData.exhibits.find(e => e.id === selectedExhibitId) || museumData.videoStation;
+            refreshVoiceoverUI(ex);
+            renderExhibitsGrid();
+            showToast('✅ Đã lưu file lồng tiếng cho hiện vật!');
+          }
+        } catch (err) {
+          showToast('Lỗi: ' + err.message, true);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 13. Direct Micro Recording (MediaRecorder API)
+    async function toggleRecording() {
+      if (!isRecording) {
+        // Start Recording
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          recordedChunks = [];
+          
+          let options = { mimeType: 'audio/webm' };
+          if (!MediaRecorder.isTypeSupported('audio/webm')) {
+            options = {};
+          }
+
+          mediaRecorder = new MediaRecorder(stream, options);
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
+
+          mediaRecorder.onstop = async () => {
+            clearInterval(recordTimerInterval);
+            const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+            
+            // Upload recorded blob to server
+            showToast('Đang lưu bản thu lồng tiếng lên server...');
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  fileName: `mic_voiceover_${selectedExhibitId}.webm`,
+                  fileData: e.target.result
+                })
+              });
+              if (res.ok) {
+                const data = await res.json();
+                updateCurrentExhibitField('voiceoverUrl', data.url);
+                let ex = museumData.exhibits.find(ex => ex.id === selectedExhibitId) || museumData.videoStation;
+                refreshVoiceoverUI(ex);
+                renderExhibitsGrid();
+                showToast('🎉 Ghi âm thành công & đã gán vào hiện vật!');
+              }
+            };
+            reader.readAsDataURL(audioBlob);
+
+            // Stop all audio tracks
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorder.start();
+          isRecording = true;
+          recordStartTime = Date.now();
+
+          // UI update
+          const btn = document.getElementById('btnRecord');
+          btn.classList.add('recording');
+          document.getElementById('recordIcon').textContent = '⏹️';
+          document.getElementById('recordText').textContent = 'Dừng Thu Âm';
+
+          recordTimerInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
+            const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const s = String(elapsed % 60).padStart(2, '0');
+            document.getElementById('recordTimer').textContent = `${m}:${s}`;
+          }, 500);
+
+        } catch (err) {
+          alert('Không thể truy cập Microphone: ' + err.message + '\nVui lòng cấp quyền truy cập Mic trong trình duyệt.');
+        }
+      } else {
+        // Stop recording
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+        isRecording = false;
+
+        const btn = document.getElementById('btnRecord');
+        btn.classList.remove('recording');
+        document.getElementById('recordIcon').textContent = '⏺️';
+        document.getElementById('recordText').textContent = 'Bắt Đầu Thu Âm';
+      }
+    }
+
+    function clearVoiceover() {
+      updateCurrentExhibitField('voiceoverUrl', '');
+      let ex = museumData.exhibits.find(e => e.id === selectedExhibitId) || museumData.videoStation;
+      refreshVoiceoverUI(ex);
+      renderExhibitsGrid();
+      showToast('Đã xóa lồng tiếng, chuyển về chế độ đọc TTS');
+    }
+
+    // 14. Render Wall & Ceiling Banners Editor
+    function renderBannersEditor() {
+      const container = document.getElementById('bannersEditorContainer');
+      container.innerHTML = '';
+
+      const banners = museumData.banners || {};
+      const bannerKeys = [
+        { key: 'north', name: 'Tường Bắc (1954 - 1960)' },
+        { key: 'south', name: 'Tường Nam (Tổng kết 1954 - 1975)' },
+        { key: 'east', name: 'Tường Đông (1961 - 1972)' },
+        { key: 'west', name: 'Tường Tây (Chiến dịch Hồ Chí Minh 1975)' },
+        { key: 'ceiling', name: 'Khẩu Hiệu Trung Tâm Trần Nhà' }
+      ];
+
+      bannerKeys.forEach(({ key, name }) => {
+        const b = banners[key] || { title: '', subtitle: '', bgColor: '#991b1b', textColor: '#fef08a' };
+
+        const card = document.createElement('div');
+        card.className = 'editor-card';
+        card.innerHTML = `
+          <div class="card-heading">
+            <span>🚩 ${name}</span>
+          </div>
+          <div class="form-group">
+            <label>Khẩu Hiệu Chính:</label>
+            <input type="text" class="form-control" value="${b.title || ''}" oninput="updateBannerField('${key}', 'title', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Phụ Đề / Tóm Tắt Tường:</label>
+            <input type="text" class="form-control" value="${b.subtitle || ''}" oninput="updateBannerField('${key}', 'subtitle', this.value)">
+          </div>
+          <div class="color-row">
+            <div class="form-group" style="flex: 1;">
+              <label>Màu Nền:</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="color" class="color-picker-input" value="${b.bgColor || '#991b1b'}" onchange="updateBannerField('${key}', 'bgColor', this.value)">
+                <input type="text" class="form-control" value="${b.bgColor || '#991b1b'}" oninput="updateBannerField('${key}', 'bgColor', this.value)">
+              </div>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label>Màu Chữ:</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="color" class="color-picker-input" value="${b.textColor || '#fef08a'}" onchange="updateBannerField('${key}', 'textColor', this.value)">
+                <input type="text" class="form-control" value="${b.textColor || '#fef08a'}" oninput="updateBannerField('${key}', 'textColor', this.value)">
+              </div>
+            </div>
+          </div>
+          <div class="banner-preview-strip" id="bannerPreview_${key}" style="background-color: ${b.bgColor}; color: ${b.textColor};">
+            <div style="font-size: 13px; font-weight: 800;">${b.title}</div>
+            <div style="font-size: 11px; opacity: 0.9; margin-top: 4px;">${b.subtitle}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function updateBannerField(wallKey, field, val) {
+      if (!museumData.banners) museumData.banners = {};
+      if (!museumData.banners[wallKey]) {
+        museumData.banners[wallKey] = { title: '', subtitle: '', bgColor: '#991b1b', textColor: '#fef08a' };
+      }
+      museumData.banners[wallKey][field] = val;
+
+      const preview = document.getElementById(`bannerPreview_${wallKey}`);
+      if (preview) {
+        if (field === 'bgColor') preview.style.backgroundColor = val;
+        if (field === 'textColor') preview.style.color = val;
+        if (field === 'title') preview.children[0].textContent = val;
+        if (field === 'subtitle') preview.children[1].textContent = val;
+      }
+    }
+
+    // 15. SAVE ALL & BROADCAST REAL-TIME
+    async function saveAllMuseumData() {
+      try {
+        showToast('Đang lưu và đồng bộ thời gian thực...');
+
+        museumData.lastUpdated = Date.now();
+
+        // 1. Post to Server API
+        const res = await fetch('/api/exhibits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(museumData)
+        });
+
+        if (res.ok) {
+          // 2. Broadcast via BroadcastChannel (for instant same-browser tabs update)
+          syncChannel.postMessage({
+            type: 'MUSEUM_UPDATED',
+            data: museumData,
+            timestamp: museumData.lastUpdated
+          });
+
+          // 3. Fallback localStorage
+          localStorage.setItem('museum_data_cache', JSON.stringify(museumData));
+
+          showToast('✅ ĐÃ LƯU & ĐỒNG BỘ TỚI BẢN NGƯỜI DÙNG 3D THÀNH CÔNG!');
+        } else {
+          showToast('Lỗi khi lưu lên máy chủ!', true);
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Lỗi kết nối: ' + err.message, true);
+      }
+    }
+
+    // Filter exhibits
+    function filterExhibits(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-tag').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderExhibitsGrid();
+    }
+
+    // Switch Tab
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      if (tabId === 'floorplan') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('tab-floorplan').classList.add('active');
+      } else if (tabId === 'studio') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('tab-studio').classList.add('active');
+      } else if (tabId === 'banners') {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('tab-banners').classList.add('active');
+      }
+    }
+
+    // Show Toast
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.textContent = msg;
+      toast.style.background = isError 
+        ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' 
+        : 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // Multi-Device QR Code Modal Handlers
+    let adminDeviceUserUrl = '';
+    let adminDeviceAdminUrl = '';
+
+    async function openAdminQrModal() {
+      const modal = document.getElementById('adminQrModal');
+      const img = document.getElementById('adminQrImg');
+      const userUrlSpan = document.getElementById('adminUserUrlText');
+      const adminUrlSpan = document.getElementById('adminPanelUrlText');
+      modal.style.display = 'flex';
+
+      try {
+        const res = await fetch('/api/qr');
+        if (res.ok) {
+          const d = await res.json();
+          if (d.qr) img.src = d.qr;
+          adminDeviceUserUrl = d.url;
+          userUrlSpan.textContent = d.url;
+          adminDeviceAdminUrl = `http://${d.localIp}:${d.port}/admin.html`;
+          adminUrlSpan.textContent = adminDeviceAdminUrl;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function closeAdminQrModal() {
+      document.getElementById('adminQrModal').style.display = 'none';
+    }
+
+    function copyLink(type) {
+      const text = type === 'user' ? adminDeviceUserUrl : adminDeviceAdminUrl;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('✅ Đã sao chép liên kết vào bộ nhớ tạm!');
+      });
+    }
+
+    // =========================================================================
+    // KHO TƯ LIỆU LỊCH SỬ (KHU 1 & KHU 3 - 61 ẢNH & VIDEO)
+    // =========================================================================
+    let currentMediaZoneFilter = 'all';
+
+    function setMediaFilterZone(zone) {
+      currentMediaZoneFilter = zone;
+      const pillIds = {
+        'all': 'filterPillAll',
+        'khu3': 'filterPillKhu3',
+        'khu1': 'filterPillKhu1',
+        'ap_bac': 'filterPillApBac',
+        'video': 'filterPillVideo'
+      };
+      Object.keys(pillIds).forEach(k => {
+        const el = document.getElementById(pillIds[k]);
+        if (!el) return;
+        if (k === zone) {
+          el.style.background = '#059669';
+          el.style.color = '#ffffff';
+          el.style.borderColor = '#10b981';
+        } else {
+          el.style.background = '#1e293b';
+          el.style.color = k === 'khu3' ? '#38bdf8' : (k === 'video' ? '#f43f5e' : (k === 'ap_bac' ? '#f59e0b' : '#cbd5e1'));
+          el.style.borderColor = '#475569';
+        }
+      });
+      renderKhu1Gallery(document.getElementById('khu1SearchInput') ? document.getElementById('khu1SearchInput').value : '');
+    }
+
+    function toggleKhu1Gallery() {
+      const panel = document.getElementById('khu1GalleryPanel');
+      const btn = document.getElementById('btnToggleKhu1Gallery');
+      if (!panel) return;
+      const isOpen = panel.style.display !== 'none';
+      panel.style.display = isOpen ? 'none' : 'block';
+      const count = (museumData && museumData.mediaLibrary) ? museumData.mediaLibrary.length : 61;
+      if (btn) btn.innerHTML = isOpen ? `▼ Mở Thư Viện Chọn Nhanh (${count})` : '▲ Thu Gọn Thư Viện';
+      if (!isOpen) {
+        renderKhu1Gallery();
+      }
+    }
+
+    function renderKhu1Gallery(searchTerm = '') {
+      const grid = document.getElementById('khu1GalleryGrid');
+      if (!grid) return;
+
+      const list = (museumData && museumData.mediaLibrary) ? museumData.mediaLibrary : [];
+      if (!list.length) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; color: #94a3b8; font-size: 12px; text-align: center; padding: 20px;">Đang nạp danh mục 61 tư liệu lịch sử Khu 1 & Khu 3...</div>';
+        return;
+      }
+
+      const term = (searchTerm || '').toLowerCase().trim();
+      const filtered = list.filter(item => {
+        // Zone filter
+        if (currentMediaZoneFilter === 'khu3') {
+          if (item.zone !== 'khu3' && !item.url.includes('/khu3/') && !item.id.includes('khu3')) return false;
+        } else if (currentMediaZoneFilter === 'khu1') {
+          if (item.zone === 'khu3' || item.url.includes('/khu3/') || item.id.includes('khu3')) return false;
+        } else if (currentMediaZoneFilter === 'ap_bac') {
+          const matchApBac = (item.title && item.title.toLowerCase().includes('ấp bắc')) || (item.category === 'ap_bac');
+          if (!matchApBac) return false;
+        } else if (currentMediaZoneFilter === 'video') {
+          if (item.type !== 'video' && item.category !== 'video_tu_lieu') return false;
+        }
+
+        // Search term
+        if (!term) return true;
+        return (item.title && item.title.toLowerCase().includes(term)) ||
+               (item.category && item.category.toLowerCase().includes(term)) ||
+               (item.fileName && item.fileName.toLowerCase().includes(term)) ||
+               (item.description && item.description.toLowerCase().includes(term));
+      });
+
+      if (!filtered.length) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; color: #f87171; font-size: 12px; text-align: center; padding: 20px;">Không tìm thấy tư liệu nào khớp với bộ lọc hoặc từ khóa "' + searchTerm + '"</div>';
+        return;
+      }
+
+      const currentMediaUrl = document.getElementById('fieldMediaUrl') ? document.getElementById('fieldMediaUrl').value : '';
+
+      grid.innerHTML = filtered.map(item => {
+        const isSelected = (currentMediaUrl === item.url);
+        const isKhu3 = (item.zone === 'khu3' || item.url.includes('/khu3/') || item.id.includes('khu3'));
+        return `
+          <div style="background: ${isSelected ? '#064e3b' : '#1e293b'}; border: 1.5px solid ${isSelected ? '#10b981' : (isKhu3 ? '#0284c7' : '#334155')}; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: all 0.2s; position: relative;" onmouseover="if(!${isSelected}) this.style.borderColor='#34d399'" onmouseout="if(!${isSelected}) this.style.borderColor='${isKhu3 ? '#0284c7' : '#334155'}'" onclick="selectKhu1Media('${item.id}')">
+            <div style="height: 85px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+              ${item.type === 'video' 
+                ? `<video src="${item.url}" style="width: 100%; height: 100%; object-fit: cover;"></video><span style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.85); color: #f43f5e; font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 3px;">▶ VIDEO</span>`
+                : `<img src="${item.url}" alt="${item.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${item.url.replace(/\/khu[13]\//, '/uploads/')}';">`}
+              ${isKhu3 ? `<span style="position: absolute; top: 4px; left: 4px; background: rgba(2, 132, 199, 0.9); color: #fff; font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 3px;">KHU 3</span>` : ''}
+              ${isSelected ? `<span style="position: absolute; top: 4px; right: 4px; background: #10b981; color: #fff; font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 3px;">ĐANG CHỌN</span>` : ''}
+            </div>
+            <div style="padding: 8px; font-size: 11px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="font-weight: 700; color: #f8fafc; line-height: 1.3; margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${item.title}">${item.title}</div>
+                <div style="color: ${isKhu3 ? '#38bdf8' : '#94a3b8'}; font-size: 10px;">${item.year || (isKhu3 ? 'Khu 3: 1961-1965' : 'Tư liệu lịch sử')}</div>
+              </div>
+              <button type="button" class="btn" style="margin-top: 8px; width: 100%; padding: 4px 6px; font-size: 10px; font-weight: 600; background: ${isSelected ? '#10b981' : '#334155'}; color: #fff; border-radius: 4px;" onclick="event.stopPropagation(); selectKhu1Media('${item.id}');">
+                ${isSelected ? '✓ Đang Dùng' : '+ Chọn File Này'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterKhu1Gallery(val) {
+      renderKhu1Gallery(val);
+    }
+
+    function selectKhu1Media(mediaId) {
+      if (!museumData || !museumData.mediaLibrary) return;
+      const item = museumData.mediaLibrary.find(m => m.id === mediaId);
+      if (!item) return;
+
+      const urlInput = document.getElementById('fieldMediaUrl');
+      if (urlInput) urlInput.value = item.url;
+
+      updateCurrentExhibitField('mediaUrl', item.url);
+      if (item.type === 'video') {
+        updateCurrentExhibitField('mediaType', 'video');
+        const typeSelect = document.getElementById('fieldMediaType');
+        if (typeSelect) typeSelect.value = 'video';
+      } else {
+        updateCurrentExhibitField('mediaType', 'image');
+        const typeSelect = document.getElementById('fieldMediaType');
+        if (typeSelect) typeSelect.value = 'image';
+      }
+
+      // Điền sẵn tiêu đề và mô tả
+      const titleInput = document.getElementById('fieldTitle');
+      if (titleInput && (!titleInput.value || confirm('Bạn có muốn tự động điền Tiêu Đề & Năm theo tư liệu này không?'))) {
+        titleInput.value = item.title;
+        updateCurrentExhibitField('title', item.title);
+
+        if (item.year) {
+          const yearInput = document.getElementById('fieldYear');
+          if (yearInput) {
+            yearInput.value = item.year;
+            updateCurrentExhibitField('year', item.year);
+          }
+        }
+
+        if (item.description) {
+          const descInput = document.getElementById('fieldShortDesc');
+          if (descInput) {
+            descInput.value = item.description;
+            updateCurrentExhibitField('shortDescription', item.description);
+          }
+        }
+      }
+
+      refreshMediaPreview();
+      renderKhu1Gallery(document.getElementById('khu1SearchInput') ? document.getElementById('khu1SearchInput').value : '');
+      showToast('✅ Đã gán thành công: ' + item.title);
+    }
+  </script>
+
+  <!-- Multi-Device Connection Modal -->
+  <div id="adminQrModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 10000; align-items: center; justify-content: center; padding: 16px;" onclick="if(event.target === this) closeAdminQrModal()">
+    <div style="background: #111827; border: 2px solid #10b981; border-radius: 20px; max-width: 580px; width: 100%; padding: 28px; position: relative; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.8);">
+      <button style="position: absolute; top: 14px; right: 14px; background: #1f2937; border: 1px solid #374151; color: #9ca3af; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;" onclick="closeAdminQrModal()">✕</button>
+      
+      <div style="font-size: 32px; margin-bottom: 4px;">📱</div>
+      <h3 style="font-size: 18px; color: #34d399; margin-bottom: 4px;">MỞ BẢO TÀNG TRÊN ĐIỆN THOẠI & ĐA THIẾT BỊ</h3>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">
+        Kết nối điện thoại/máy tính bảng cùng mạng Wi-Fi và quét mã QR để tham quan 3D trên tay
+      </p>
+
+      <div style="background: #ffffff; padding: 14px; border-radius: 14px; display: inline-block; box-shadow: 0 8px 25px rgba(0,0,0,0.4); margin-bottom: 16px;">
+        <img id="adminQrImg" src="" alt="Mã QR" style="width: 220px; height: 220px; display: block;">
+      </div>
+
+      <!-- Links -->
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; text-align: left;">
+        <div style="background: #1f2937; border: 1px solid #374151; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 11px; color: #94a3b8;">Bản Người Dùng 3D (Tham quan):</div>
+            <code id="adminUserUrlText" style="color: #38bdf8; font-size: 12px; font-weight: bold;">Đang tải...</code>
+          </div>
+          <button class="btn" style="background: #10b981; color: #000; font-size: 11px; padding: 4px 10px;" onclick="copyLink('user')">Sao Chép</button>
+        </div>
+
+        <div style="background: #1f2937; border: 1px solid #374151; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 11px; color: #94a3b8;">Bản Admin Quản Trị (Điều khiển từ xa):</div>
+            <code id="adminPanelUrlText" style="color: #fbbf24; font-size: 12px; font-weight: bold;">Đang tải...</code>
+          </div>
+          <button class="btn" style="background: #f59e0b; color: #000; font-size: 11px; padding: 4px 10px;" onclick="copyLink('admin')">Sao Chép</button>
+        </div>
+      </div>
+
+      <!-- Guide -->
+      <div style="text-align: left; background: #0f172a; border-radius: 10px; padding: 12px 16px; font-size: 12px; line-height: 1.7; color: #cbd5e1;">
+        <div><strong>• Cùng Wi-Fi:</strong> Mở Camera trên điện thoại (iOS/Android) quét mã QR ở trên là vào ngay.</div>
+        <div><strong>• Máy tính khác / TV thông minh:</strong> Nhập địa chỉ IP vào trình duyệt của thiết bị.</div>
+        <div><strong>• Chia sẻ qua Internet:</strong> Chạy lệnh <code>npx localtunnel --port 3000</code> trên máy để nhận đường link HTTPS công khai.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,3543 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SA BÀN LỊCH SỬ 3D: HAI MIỀN – MỘT KHÁT VỌNG THỐNG NHẤT (1954–1975)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Cinzel:wght@600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    :root {
+      --gold: #d4af37;
+      --gold-bright: #fde047;
+      --museum-dark: #0a0908;
+    }
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 35%, #26221e 0%, #12100e 60%, #070605 100%);
+      font-family: 'Be Vietnam Pro', sans-serif;
+      color: #f5f5f4;
+    }
+    #canvas-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .font-serif-title {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+    .font-cinzel {
+      font-family: 'Cinzel', serif;
+    }
+    .glass-panel {
+      background: linear-gradient(145deg, rgba(24, 21, 18, 0.88) 0%, rgba(12, 10, 9, 0.94) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    .gold-btn {
+      background: linear-gradient(135deg, rgba(41, 37, 36, 0.9) 0%, rgba(28, 25, 23, 0.95) 100%);
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      color: #fef3c7;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .gold-btn:hover {
+      border-color: #fbbf24;
+      background: linear-gradient(135deg, rgba(180, 83, 9, 0.35) 0%, rgba(68, 64, 60, 0.9) 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.28);
+    }
+    .gold-btn.active {
+      background: linear-gradient(135deg, #d4af37 0%, #b45309 100%);
+      color: #0c0a09;
+      border-color: #fef08a;
+      font-weight: 700;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.55);
+    }
+    /* Custom Range Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: rgba(255,255,255,0.12);
+      height: 5px;
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 15px;
+      width: 15px;
+      border-radius: 50%;
+      background: #fbbf24;
+      cursor: pointer;
+      border: 2px solid #0c0a09;
+      box-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+    }
+    /* 3D Red Banner Labels floating in scene */
+    .label-3d {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+      z-index: 10;
+    }
+    .label-3d:hover {
+      transform: translate(-50%, -108%) scale(1.07);
+      filter: brightness(1.15);
+    }
+    .red-plaque {
+      background: linear-gradient(180deg, #b91c1c 0%, #881313 100%);
+      border: 2px solid #fbbf24;
+      color: #fef08a;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.75), 0 0 12px rgba(212, 175, 55, 0.35);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+      position: relative;
+    }
+    .red-plaque::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -10px;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 10px;
+      background: #fbbf24;
+      box-shadow: 0 0 4px #000;
+    }
+    .ap-plaque {
+      background: linear-gradient(180deg, #d6bc8b 0%, #b59663 100%);
+      border: 2px solid #451a03;
+      color: #1c1917;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-weight: 800;
+      font-size: 10.5px;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      box-shadow: 0 5px 14px rgba(0,0,0,0.75);
+      position: relative;
+    }
+    .ap-plaque::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -9px;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 9px;
+      background: #451a03;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.5);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 3D Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- Floating 3D Historical Signboards synced to 3D coordinates -->
+  <div id="labels-container" class="pointer-events-none absolute inset-0 overflow-hidden z-10">
+    <div id="lbl-mienbac" class="label-3d" onclick="focusZone('mienbac')">
+      <div class="red-plaque">★ MIỀN BẮC</div>
+    </div>
+    <div id="lbl-truongson" class="label-3d" onclick="focusZone('truongson')">
+      <div class="red-plaque">ĐƯỜNG TRƯỜNG SƠN</div>
+    </div>
+    <div id="lbl-miennam" class="label-3d" onclick="focusZone('miennam')">
+      <div class="red-plaque">★ MIỀN NAM</div>
+    </div>
+    <div id="lbl-apchienluoc" class="label-3d" onclick="focusZone('apchienluoc')">
+      <div class="ap-plaque">ẤP CHIẾN LƯỢC</div>
+    </div>
+  </div>
+
+  <!-- Top Header Banner -->
+  <header class="fixed top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+    <div class="glass-panel px-4 py-2.5 rounded-2xl flex items-center gap-3 pointer-events-auto">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-yellow-600 to-red-800 flex items-center justify-center shadow-lg border border-amber-200/50 text-xl">
+        🏛️
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-red-900/80 text-amber-200 border border-amber-500/40">Sa Bàn Lịch Sử 3D Siêu Chi Tiết</span>
+          <span id="stat-badge" class="text-[10px] text-emerald-300 font-mono bg-emerald-950/70 px-2 py-0.5 rounded border border-emerald-500/30">Tàu Chiến Vũ Trang • Sông Nước Ngọc Lam • Chuyển Động Toàn Phần</span>
+        </div>
+        <h1 class="font-serif-title text-sm sm:text-base md:text-lg font-bold text-amber-200 tracking-wide">
+          HAI MIỀN – MỘT KHÁT VỌNG THỐNG NHẤT (1954–1975)
+        </h1>
+      </div>
+    </div>
+
+    <!-- Quick Mode & Audio/Inspector Toggles -->
+    <div class="flex items-center gap-2 pointer-events-auto">
+      <button id="btn-StudioLight" onclick="setLightingMode('studio')" class="gold-btn active px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5">
+        <span>☀️</span> <span class="hidden sm:inline">Triển Lãm Sáng</span>
+      </button>
+      <button id="btn-NightLight" onclick="setLightingMode('night')" class="gold-btn px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5">
+        <span>🌙</span> <span class="hidden sm:inline">Sa Bàn Đêm Rực Rỡ</span>
+      </button>
+      <button id="btn-AutoRotate" onclick="toggleAutoRotate()" class="gold-btn px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5">
+        <span>🔄</span> <span class="hidden sm:inline">Tự Xoay</span>
+      </button>
+      <button onclick="toggleControlPanel()" class="gold-btn px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5">
+        <span>🎛️</span> <span class="hidden md:inline">Tinh Chỉnh Chi Tiết</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Left Historical Zone Info Card -->
+  <aside id="info-card" class="fixed left-3 top-24 z-20 w-80 max-w-[calc(100vw-24px)] glass-panel rounded-2xl p-4 transition-all duration-300 pointer-events-auto">
+    <div class="flex items-center justify-between border-b border-amber-500/30 pb-2.5 mb-3">
+      <div class="flex items-center gap-2">
+        <span id="zone-icon" class="text-xl">🇻🇳</span>
+        <div>
+          <div class="text-[10px] uppercase tracking-widest text-amber-400/90 font-semibold">Thuyết Minh Phân Khu</div>
+          <h2 id="zone-title" class="font-serif-title text-base font-bold text-amber-100">Toàn Cảnh Sa Bàn Hai Miền</h2>
+        </div>
+      </div>
+      <button onclick="document.getElementById('info-card').classList.toggle('hidden')" class="text-stone-400 hover:text-white text-sm px-1.5" title="Thu gọn">✕</button>
+    </div>
+    <p id="zone-desc" class="text-xs text-stone-200 leading-relaxed mb-3">
+      Sa bàn tái hiện toàn diện bức tranh lịch sử Việt Nam giai đoạn 1954–1975: <strong>Miền Bắc</strong> xây dựng chủ nghĩa xã hội với đập thủy điện xả thác trắng xóa qua gầm cầu bê tông, đổ ra dòng sông lớn uốn lượn quanh bán đảo làng quê và nhánh kênh chảy dọc chân <strong>Đường Trường Sơn</strong> đến tận <strong>Miền Nam</strong> & <strong>Ấp Chiến Lược</strong>.
+    </p>
+    <div id="zone-details" class="grid grid-cols-2 gap-1.5 text-[11px] bg-black/40 p-2.5 rounded-xl border border-amber-500/20">
+      <div class="text-amber-300">🚢 Tàu chiến & Pháo hạm: <span class="text-white font-semibold">8 tàu tuần tiễu</span></div>
+      <div class="text-amber-300">🏠 Nhà & Công trình: <span class="text-white font-semibold">28 mô hình</span></div>
+      <div class="text-amber-300">🌊 Sông hồ & Thác: <span class="text-white font-semibold">Resin 2 lớp</span></div>
+      <div class="text-amber-300">⚙️ Bộ phận chuyển động: <span class="text-white font-semibold">100% thời gian thực</span></div>
+    </div>
+    <div class="mt-3 flex items-center justify-between text-[11px] text-stone-400">
+      <span>🖱️ Kéo trái: Xoay • Cuộn: Phóng to từng bộ phận</span>
+    </div>
+  </aside>
+
+  <!-- Right Micro-Detail Control Panel (Grass, Water, Lights, Houses) -->
+  <aside id="control-panel" class="fixed right-3 top-24 z-20 w-80 max-w-[calc(100vw-24px)] max-h-[calc(100vh-185px)] overflow-y-auto glass-panel rounded-2xl p-4 transition-all duration-300 pointer-events-auto">
+    <div class="flex items-center justify-between border-b border-amber-500/30 pb-2 mb-3">
+      <div class="flex items-center gap-2">
+        <span>🔍</span>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300">Điều Khiển Từng Chi Tiết Sa Bàn</h3>
+      </div>
+      <button onclick="toggleControlPanel()" class="text-stone-400 hover:text-white text-sm">✕</button>
+    </div>
+
+    <div class="space-y-3.5 text-xs">
+      <!-- 1. Grass & Wind -->
+      <div class="bg-stone-900/75 p-2.5 rounded-xl border border-stone-700/60">
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="font-semibold text-emerald-300">🌱 1. Từng Ngọn Cỏ & Rừng Cây</span>
+          <span id="val-grass" class="text-[11px] font-mono text-amber-200">Gió: 1.0x</span>
+        </div>
+        <div class="space-y-2">
+          <div>
+            <div class="flex justify-between text-[11px] text-stone-400 mb-1">
+              <span>Tốc độ gió thổi đồng cỏ & tàu dừa</span>
+            </div>
+            <input type="range" min="0" max="3" step="0.1" value="1.0" oninput="updateDetailParam('windSpeed', this.value)" />
+          </div>
+          <div>
+            <div class="flex justify-between text-[11px] text-stone-400 mb-1">
+              <span>Chiều cao ngọn cỏ 3D (Tỉ lệ thực tế thấp)</span>
+              <span id="val-grassHeight" class="text-stone-300">65%</span>
+            </div>
+            <input type="range" min="0.25" max="1.3" step="0.05" value="0.65" oninput="updateDetailParam('grassScale', this.value)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Water Waves & Waterfall -->
+      <div class="bg-stone-900/75 p-2.5 rounded-xl border border-stone-700/60">
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="font-semibold text-sky-300">🌊 2. Từng Sóng Nước & Thác Đập</span>
+          <span id="val-wave" class="text-[11px] font-mono text-amber-200">Sóng: 1.0x</span>
+        </div>
+        <div class="space-y-2">
+          <div>
+            <div class="flex justify-between text-[11px] text-stone-400 mb-1">
+              <span>Độ gợn sóng sông & bọt trắng ven bờ</span>
+            </div>
+            <input type="range" min="0.1" max="2.5" step="0.1" value="1.0" oninput="updateDetailParam('waveHeight', this.value)" />
+          </div>
+          <div>
+            <div class="flex justify-between text-[11px] text-stone-400 mb-1">
+              <span>Tốc độ dòng chảy & thác thủy điện</span>
+            </div>
+            <input type="range" min="0.2" max="2.5" step="0.1" value="1.0" oninput="updateDetailParam('waterSpeed', this.value)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Every Lamp, Window & LED -->
+      <div class="bg-stone-900/75 p-2.5 rounded-xl border border-stone-700/60">
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="font-semibold text-amber-300">💡 3. Từng Cái Đèn & Ánh Sáng</span>
+          <span id="val-lights" class="text-[11px] font-mono text-amber-200">100%</span>
+        </div>
+        <div class="space-y-2">
+          <div>
+            <div class="flex justify-between text-[11px] text-stone-400 mb-1">
+              <span>Cường độ đèn đường, cửa sổ & đèn gầm</span>
+            </div>
+            <input type="range" min="0" max="2.5" step="0.05" value="1.2" oninput="updateDetailParam('lampIntensity', this.value)" />
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 pt-1">
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-stone-300">
+              <input type="checkbox" checked onchange="toggleSubFeature('rimLeds', this.checked)" class="accent-amber-400" />
+              Đèn LED viền đế
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-stone-300">
+              <input type="checkbox" checked onchange="toggleSubFeature('streetLamps', this.checked)" class="accent-amber-400" />
+              Đèn đường & cầu
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-stone-300">
+              <input type="checkbox" checked onchange="toggleSubFeature('houseLights', this.checked)" class="accent-amber-400" />
+              Đèn nhà & nhà máy
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-stone-300">
+              <input type="checkbox" checked onchange="toggleSubFeature('battleFire', this.checked)" class="accent-amber-400" />
+              Lửa nổ chiến trường
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Convoy & Helicopters Animation -->
+      <div class="bg-stone-900/75 p-2.5 rounded-xl border border-stone-700/60">
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="font-semibold text-orange-300">🚢 4. Tàu Chiến, Đoàn Xe & Trực Thăng</span>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] text-stone-400">Tốc độ tàu chiến, pháo, xe & cánh quạt</span>
+          <input type="range" min="0" max="2.5" step="0.1" value="1.0" class="w-28" oninput="updateDetailParam('vehicleSpeed', this.value)" />
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Bottom Camera Tour Bar (Inspect Macro & Micro Details) -->
+  <nav class="fixed bottom-3 left-1/2 -translate-x-1/2 z-20 max-w-[96vw] overflow-x-auto glass-panel px-3 py-2 rounded-2xl flex items-center gap-1.5 pointer-events-auto">
+    <button id="cam-overview" onclick="focusZone('overview')" class="gold-btn active px-3 py-1.5 rounded-xl text-xs whitespace-nowrap flex items-center gap-1.5">
+      <span>🗺️</span> Toàn Cảnh Sa Bàn
+    </button>
+    <button id="cam-mienbac" onclick="focusZone('mienbac')" class="gold-btn px-3 py-1.5 rounded-xl text-xs whitespace-nowrap flex items-center gap-1.5">
+      <span>🏭</span> Miền Bắc & Thủy Điện
+    </button>
+    <button id="cam-truongson" onclick="focusZone('truongson')" class="gold-btn px-3 py-1.5 rounded-xl text-xs whitespace-nowrap flex items-center gap-1.5">
+      <span>🚛</span> Đường Trường Sơn
+    </button>
+    <button id="cam-miennam" onclick="focusZone('miennam')" class="gold-btn px-3 py-1.5 rounded-xl text-xs whitespace-nowrap flex items-center gap-1.5">
+      <span>🌴</span> Làng Quê & Sông Hồ
+    </button>
+    <button id="cam-apchienluoc" onclick="focusZone('apchienluoc')" class="gold-btn px-3 py-1.5 rounded-xl text-xs whitespace-nowrap flex items-center gap-1.5">
+      <span>🔥</span> Ấp Chiến Lược
+    </button>
+    <button id="cam-micrograss" onclick="focusZone('micrograss')" class="gold-btn px-3 py-1.5 rounded-xl text-xs whitespace-nowrap flex items-center gap-1.5">
+      <span>🚢</span> Cận Cảnh Tàu Chiến & Sông Nước
+    </button>
+  </nav>
+
+  <script>
+    // ============================================================================
+    // 1. GLOBAL STATE & CONFIGURATION
+    // ============================================================================
+    const WATER_LEVEL = 0.45;
+
+    const params = {
+      windSpeed: 1.0,
+      grassScale: 0.65,
+      waveHeight: 1.0,
+      waterSpeed: 1.0,
+      lampIntensity: 1.2,
+      vehicleSpeed: 1.0,
+      lightingMode: 'studio',
+      autoRotate: false
+    };
+
+    const ZONE_INFO = {
+      overview: {
+        icon: '🇻🇳',
+        title: 'Toàn Cảnh: Hai Miền – Một Khát Vọng Thống Nhất',
+        desc: 'Sa bàn lịch sử 3D tái hiện trọn vẹn sự gắn kết máu thịt giữa Hậu phương lớn Miền Bắc và Tiền tuyến lớn Miền Nam: dòng sông xanh ngọc bích từ thác thủy điện chảy qua cầu bê tông, mở rộng thành vịnh sông tiền cảnh với đoàn Tàu Chiến Vũ Trang (Tàu Không Số) cắm cờ đỏ sao vàng.'
+      },
+      mienbac: {
+        icon: '🏭',
+        title: 'Miền Bắc Xã Hội Chủ Nghĩa – Đập Thủy Điện & Nhà Máy',
+        desc: 'Đập thủy điện 4 cửa xả tung bọt trắng xóa cùng tua-bin phát điện quay liên tục, 2 ống khói đỏ-trắng nhả khói, đoàn xe quân sự lăn bánh qua cầu bê tông 2 trụ lớn xuất kích chi viện miền Nam.'
+      },
+      truongson: {
+        icon: '🚛',
+        title: 'Đường Mòn Trường Sơn – Đoàn Xe Lăn Bánh & Bộ Đội Hành Quân',
+        desc: 'Đoàn 14 xe tải quân sự quay từng bánh xe vượt đèo qua cửa hầm xuyên núi cùng từng tốp chiến sĩ đội mũ cối hành quân. Dưới chân núi là nhánh sông xanh biếc chảy dọc về phía chiến trường.'
+      },
+      miennam: {
+        icon: '🌴',
+        title: 'Làng Quê Miền Nam – Vịnh Sông Rộng, Cầu Gỗ & Cù Lao Dừa',
+        desc: 'Bố cục sông nước chuẩn theo mẫu sa bàn: bán đảo làng quê bên trái tiền cảnh, cây cầu gỗ bắc qua eo sông nối vào đồng lúa miền Nam, 2 cù lao dừa xanh mướt giữa làn nước xanh biếc và đoàn tàu chiến cắm cờ đỏ sao vàng.'
+      },
+      apchienluoc: {
+        icon: '🔥',
+        title: 'Ấp Chiến Lược – Trực Thăng Quét Đèn, Xe Tăng & Pháo Kích',
+        desc: '2 trực thăng UH-1 quay cánh quạt chính & cánh quạt đuôi quét đèn pha, xe tăng xoay tháp pháo bắn giật nòng, quân giải phóng và nhân dân miền Nam nổ súng bắn đạn lửa phá thế kìm kẹp.'
+      },
+      micrograss: {
+        icon: '🚢',
+        title: 'Cận Cảnh: Đoàn Tàu Chiến Vũ Trang, Pháo Hạm & Sông Nước',
+        desc: 'Góc máy cận cảnh soi rõ từng chiếc Tàu Chiến / Tàu Vận Tải Vũ Trang với thân bọc thép, đài chỉ huy, radar quay, ụ pháo hạm mũi & đuôi tàu xoay nòng khai hỏa, cờ đỏ sao vàng tung bay và sóng nước rẽ bọt trắng xóa.'
+      }
+    };
+
+    // Scene globals
+    let scene, camera, renderer, controls, clock;
+    let grassMaterial, waterMaterial, waterfallMaterial, flagMaterials = [];
+    let grassMesh;
+    let lampBulbs = [], lampHalos = [], houseWindowMaterials = [], baseUnderglowMat;
+    let streetLampGroup, rimLedGroup, battleFireGroup;
+    let truongSonTrucks = [], helicopterRotors = [], helicopterTailRotors = [], helicopterSearchlights = [];
+    let riverBoats = [], animatedPeople = [], explosionParticles = [], smokeParticles = [];
+    let waterfallSplashParticles = [], combatGunners = [], tracerBullets = [];
+    let hydroTurbines = [], smokestackPlumes = [], animatedTanks = [];
+    let explosionLight1, explosionLight2, sunLight, ambientLight, hemiLight;
+    let cameraTargetPos = new THREE.Vector3(0, 26, 40);
+    let controlsTargetPos = new THREE.Vector3(0, 2.5, 1);
+    let isCameraTransitioning = false;
+
+    // Bomb Craters in War-torn zones (Truong Son & Ap Chien Luoc)
+    const BOMB_CRATERS = [
+      { x: 9.2, z: 0.4, r: 1.35, depth: 0.32 },
+      { x: 11.6, z: 0.2, r: 1.65, depth: 0.40 },
+      { x: 13.4, z: 1.8, r: 1.25, depth: 0.30 },
+      { x: 7.5, z: -0.4, r: 1.05, depth: 0.25 }
+    ];
+
+    // All Southern Thatched House footprints (used both to place houses and to strictly exclude grass from roofs/floors!)
+    const SOUTHERN_HOUSE_COORDS = [
+      [-5.2, 4.2, 0.35, 0.92],
+      [-2.8, 3.2, 0.25, 0.96],
+      [-0.2, 1.9, 0.15, 0.92],
+      [0.8, 6.2, 0.35, 1.08],
+      [2.9, 6.8, 0.25, 1.12],
+      [6.8, 8.9, -0.25, 0.94],
+      [-13.8, 7.6, 0.55, 0.88],
+      [-12.2, 8.5, 0.45, 0.90],
+      [-10.9, 9.2, 0.35, 0.85],
+      [7.8, 2.2, -0.4, 0.95],
+      [11.2, 3.2, -0.35, 0.92]
+    ];
+
+    function isNearAnyBuildingOrBridge(x, z) {
+      // Check all Southern houses & Ap Chien Luoc barracks
+      for (const [hx, hz, , hscale] of SOUTHERN_HOUSE_COORDS) {
+        if (Math.hypot(x - hx, z - hz) < 1.25 * hscale) return true;
+      }
+      // Check Northern Industrial Platform, Dam & Tunnel Portal
+      if (x < -7.0 && z < 1.2 && z > -4.8) return true;
+      // Check Concrete Highway Bridge at (-10.8, 2.75)
+      if (Math.abs(x + 10.8) < 3.6 && Math.abs(z - 2.75) < 1.25) return true;
+      // Check Wooden Rural Bridge at (-4.8, 7.25)
+      if (Math.hypot(x + 4.8, z - 7.25) < 2.4) return true;
+      // Check Watchtowers
+      const towers = [[6.1, 3.0], [11.6, 5.1], [14.0, 5.9], [16.2, 2.2]];
+      for (const [tx, tz] of towers) {
+        if (Math.hypot(x - tx, z - tz) < 0.75) return true;
+      }
+      return false;
+    }
+
+    // ============================================================================
+    // 2. EXACT WATERWAY, CANAL, ISLAND & TERRAIN GEOMETRY MATCHING REFERENCE IMAGE
+    // ============================================================================
+    function getPolylineDist(x, z, pts) {
+      let minD = 999;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const [x1, z1] = pts[i];
+        const [x2, z2] = pts[i + 1];
+        const dx = x2 - x1, dz = z2 - z1;
+        const len2 = dx * dx + dz * dz;
+        let t = len2 > 0 ? ((x - x1) * dx + (z - z1) * dz) / len2 : 0;
+        t = Math.max(0, Math.min(1, t));
+        const px = x1 + t * dx, pz = z1 + t * dz;
+        const d = Math.hypot(x - px, z - pz);
+        if (d < minD) minD = d;
+      }
+      return minD;
+    }
+
+    function getChannelSignedDist(x, z, spine) {
+      let minSigned = 999;
+      for (let i = 0; i < spine.length - 1; i++) {
+        const p1 = spine[i];
+        const p2 = spine[i + 1];
+        const dx = p2.x - p1.x, dz = p2.z - p1.z;
+        const len2 = dx * dx + dz * dz;
+        let t = len2 > 0 ? ((x - p1.x) * dx + (z - p1.z) * dz) / len2 : 0;
+        t = Math.max(0, Math.min(1, t));
+        const px = p1.x + t * dx;
+        const pz = p1.z + t * dz;
+        const w = p1.w + t * (p2.w - p1.w);
+        const d = Math.hypot(x - px, z - pz) - w;
+        if (d < minSigned) minSigned = d;
+      }
+      return minSigned;
+    }
+
+    // 1. MAIN RIVER SPINE: Flows from Dam Spillway (-11.45, 0.2) -> under Concrete Bridge (-10.8, 2.8)
+    //    -> curves around Left Village Peninsula -> sweeps wide across Front-Left & Front-Center
+    const MAIN_RIVER_SPINE = [
+      { x: -11.45, z: 0.2,  w: 1.85 },
+      { x: -11.15, z: 2.0,  w: 2.05 },
+      { x: -10.65, z: 3.6,  w: 2.35 },
+      { x: -9.60,  z: 5.5,  w: 2.65 },
+      { x: -7.60,  z: 7.4,  w: 2.85 },
+      { x: -4.80,  z: 9.0,  w: 3.25 },
+      { x: -1.00,  z: 10.1, w: 3.35 },
+      { x: 3.20,   z: 10.5, w: 3.05 },
+      { x: 7.20,   z: 11.1, w: 2.45 }
+    ];
+
+    // Left-middle branch embracing the top of the Left-Foreground Village Peninsula
+    const LEFT_COVE_SPINE = [
+      { x: -10.85, z: 3.4, w: 1.65 },
+      { x: -13.60, z: 4.5, w: 1.60 },
+      { x: -16.80, z: 6.0, w: 1.95 }
+    ];
+
+    // Wooden Bridge Inlet Channel
+    const WOOD_BRIDGE_CHANNEL = [
+      { x: -6.8, z: 8.1, w: 1.55 },
+      { x: -4.8, z: 7.2, w: 1.35 },
+      { x: -3.2, z: 5.9, w: 1.20 },
+      { x: -4.2, z: 3.5, w: 1.15 }
+    ];
+
+    // 2. DIAGONAL TRIBUTARY CANAL: Runs along the foot of Truong Son mountains toward helicopters
+    const DIAGONAL_CANAL_SPINE = [
+      { x: -9.4,  z: 4.6,  w: 1.50 },
+      { x: -6.2,  z: 3.4,  w: 1.35 },
+      { x: -2.8,  z: 1.9,  w: 1.30 },
+      { x: 0.8,   z: 0.3,  w: 1.30 },
+      { x: 4.5,   z: -1.3, w: 1.35 },
+      { x: 8.4,   z: -2.8, w: 1.50 },
+      { x: 12.2,  z: -4.1, w: 1.60 },
+      { x: 15.8,  z: -5.0, w: 1.55 }
+    ];
+
+    // Two Lush Coconut-Palm Islands in the Foreground River Bay (matching reference image)
+    const RIVER_ISLANDS = [
+      { x: -0.85, z: 10.05, rx: 1.55, rz: 0.95, h: 0.92 }, // Center-front island with palms & bushes
+      { x: -7.85, z: 7.15,  rx: 0.92, rz: 0.65, h: 0.84 }  // Small palm islet near river bend
+    ];
+
+    // Village Footpaths / Dirt Trails in Southern Zone & Left Peninsula
+    const VILLAGE_TRAIL_SEGMENTS = [
+      [[-8.2, 2.2], [-7.2, 4.2], [-6.5, 5.5], [-3.8, 6.2], [-1.2, 6.8], [1.8, 7.6], [4.8, 8.8]],
+      [[-6.5, 5.2], [-4.2, 3.8], [-1.5, 2.6], [1.5, 1.5], [4.5, 0.8], [6.2, 2.8]],
+      [[-2.8, 5.8], [-1.2, 4.2], [1.2, 3.2], [3.5, 4.5], [5.8, 3.2]],
+      [[-14.8, 7.2], [-13.2, 7.8], [-11.6, 8.6], [-10.4, 9.5]]
+    ];
+
+    function getVillageTrailDist(x, z) {
+      let minD = 999;
+      for (const path of VILLAGE_TRAIL_SEGMENTS) {
+        const d = getPolylineDist(x, z, path);
+        if (d < minD) minD = d;
+      }
+      return minD;
+    }
+
+    function getRoadPoint(t) {
+      const x = -7.2 + t * 15.6 + Math.sin(t * Math.PI * 2.0) * 1.3;
+      const z = 1.6 - Math.sin(t * Math.PI) * 9.6 + Math.sin(t * Math.PI * 3.0) * 0.8;
+      return { x, z };
+    }
+
+    function getRoadInfo(x, z) {
+      let minDist = 999;
+      let bestT = 0;
+      const steps = 48;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const pt = getRoadPoint(t);
+        const d = Math.hypot(x - pt.x, z - pt.z);
+        if (d < minDist) {
+          minDist = d;
+          bestT = t;
+        }
+      }
+      return { dist: minDist, t: bestT };
+    }
+
+    function pseudoNoise(x, z) {
+      return (
+        Math.sin(x * 0.45) * Math.cos(z * 0.45) * 1.2 +
+        Math.sin(x * 1.1 + z * 0.8) * 0.55 +
+        Math.cos(x * 2.3 - z * 1.9) * 0.22
+      );
+    }
+
+    // Master Terrain Height Function Y(x, z)
+    function getTerrainHeight(x, z) {
+      let h = 0.72;
+
+      // 1. High Mountain Massif in Back-Left & Back-Center (Miền Bắc & Đỉnh Trường Sơn)
+      const distPeak1 = Math.hypot((x + 5.2) * 0.82, (z + 7.8) * 1.02);
+      if (distPeak1 < 13.8) {
+        const factor = Math.pow(1 - distPeak1 / 13.8, 1.72);
+        h += factor * 12.2 + factor * pseudoNoise(x * 1.2, z * 1.2) * 1.85;
+      }
+
+      const distPeak2 = Math.hypot((x + 12.0) * 0.9, (z + 5.5) * 1.0);
+      if (distPeak2 < 9.5) {
+        const factor = Math.pow(1 - distPeak2 / 9.5, 1.6);
+        h += factor * 6.8 + factor * Math.abs(pseudoNoise(x, z)) * 1.1;
+      }
+
+      // 2. Industrial & Hydroelectric Platform on Left (Miền Bắc Factory Zone)
+      const platDist = Math.max(Math.abs(x + 12.2) - 4.0, Math.abs(z + 2.4) - 2.3);
+      if (platDist < 2.1) {
+        const blend = THREE.MathUtils.smoothstep(platDist, 2.1, -0.4);
+        h = THREE.MathUtils.lerp(h, 3.85, blend);
+      }
+
+      // 3. Truong Son Road Carve along mountain slope
+      const road = getRoadInfo(x, z);
+      const roadTargetH = 1.18 + Math.sin(road.t * Math.PI) * 5.6;
+      if (road.dist < 1.8) {
+        const roadBlend = THREE.MathUtils.smoothstep(road.dist, 1.8, 0.65);
+        h = THREE.MathUtils.lerp(h, roadTargetH, roadBlend * 0.88);
+      }
+
+      // 4. Southern Rice Paddy Bunds
+      if (x > -6.5 && x < 7.2 && z > -0.5 && z < 8.5) {
+        const paddyGrid = Math.max(
+          Math.exp(-Math.pow(Math.sin((x + 1.2) * 1.35), 2) * 28),
+          Math.exp(-Math.pow(Math.sin((z - 1.0) * 1.55), 2) * 28)
+        );
+        h += paddyGrid * 0.14;
+      }
+
+      // 4b. Slightly Raised Earthen Village Trails
+      const vTrailDist = getVillageTrailDist(x, z);
+      if (vTrailDist < 0.62 && h > 0.42 && h < 1.8) {
+        const tFactor = THREE.MathUtils.smoothstep(vTrailDist, 0.62, 0.0);
+        h = THREE.MathUtils.lerp(h, 0.82, tFactor * 0.65);
+      }
+
+      // 4c. War-Torn Bomb Craters in Ap Chien Luoc
+      for (const c of BOMB_CRATERS) {
+        const cd = Math.hypot(x - c.x, z - c.z);
+        if (cd < c.r * 1.6) {
+          const craterFactor = Math.pow(1 - cd / (c.r * 1.6), 1.5);
+          h -= craterFactor * c.depth;
+        } else if (cd < c.r * 2.2) {
+          const rimFactor = Math.sin(((cd - c.r * 1.6) / (c.r * 0.6)) * Math.PI);
+          h += rimFactor * c.depth * 0.35;
+        }
+      }
+
+      // 5. CARVE DEEP, CLEAN WATER CHANNELS MATCHING REFERENCE PHOTO
+      const dMain = getChannelSignedDist(x, z, MAIN_RIVER_SPINE);
+      const dCove = getChannelSignedDist(x, z, LEFT_COVE_SPINE);
+      const dWood = getChannelSignedDist(x, z, WOOD_BRIDGE_CHANNEL);
+      const dCanal = getChannelSignedDist(x, z, DIAGONAL_CANAL_SPINE);
+
+      const minWaterSigned = Math.min(dMain, dCove, dWood, dCanal);
+
+      const isDamPlatform = x < -8.8 && z < -0.15;
+      if (!isDamPlatform && minWaterSigned < 0.95) {
+        const carveBlend = THREE.MathUtils.smoothstep(minWaterSigned, 0.95, -0.35);
+        h = THREE.MathUtils.lerp(h, -0.75, carveBlend);
+      }
+
+      // 6. Restore Lush Coconut-Palm Islands in the Foreground River Bay
+      for (const isl of RIVER_ISLANDS) {
+        const id = Math.hypot((x - isl.x) / isl.rx, (z - isl.z) / isl.rz);
+        if (id < 1.35) {
+          const islBlend = THREE.MathUtils.smoothstep(id, 1.35, 0.35);
+          const islHeight = isl.h + 0.08 * Math.cos(id * Math.PI);
+          h = Math.max(h, THREE.MathUtils.lerp(-0.75, islHeight, islBlend));
+        }
+      }
+
+      // 7. Ensure Left Foreground Village Peninsula is solid green land
+      const penDist = Math.hypot((x + 13.2) / 3.4, (z - 8.4) / 2.4);
+      if (penDist < 1.15) {
+        const penBlend = THREE.MathUtils.smoothstep(penDist, 1.15, 0.45);
+        h = Math.max(h, THREE.MathUtils.lerp(-0.4, 0.86, penBlend));
+      }
+
+      return h;
+    }
+
+    function isInsideOctagon(x, z, margin = 0) {
+      const rx = 18.6 - margin;
+      const rz = 12.6 - margin;
+      const corner = 24.5 - margin * 1.35;
+      return (
+        Math.abs(x) <= rx &&
+        Math.abs(z) <= rz &&
+        Math.abs(x) * 0.82 + Math.abs(z) <= corner
+      );
+    }
+
+    // ============================================================================
+    // 3. SCENE INITIALIZATION & LIGHTING
+    // ============================================================================
+    function initScene() {
+      const container = document.getElementById('canvas-container');
+      scene = new THREE.Scene();
+      clock = new THREE.Clock();
+
+      camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 300);
+      camera.position.set(0, 25.5, 39.5);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.06;
+      controls.maxPolarAngle = Math.PI * 0.475;
+      controls.minDistance = 3.2;
+      controls.maxDistance = 68;
+      controls.target.set(0, 2.5, 1.0);
+
+      // Ambient & Hemisphere Lighting
+      ambientLight = new THREE.AmbientLight(0xfffbeb, 0.55);
+      scene.add(ambientLight);
+
+      hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x3b2f2f, 0.65);
+      hemiLight.position.set(0, 40, 0);
+      scene.add(hemiLight);
+
+      // Main Museum Directional Sunlight
+      sunLight = new THREE.DirectionalLight(0xfff7ed, 1.35);
+      sunLight.position.set(18, 32, 22);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 2048;
+      sunLight.shadow.mapSize.height = 2048;
+      sunLight.shadow.camera.near = 5;
+      sunLight.shadow.camera.far = 80;
+      const d = 22;
+      sunLight.shadow.camera.left = -d;
+      sunLight.shadow.camera.right = d;
+      sunLight.shadow.camera.top = d;
+      sunLight.shadow.camera.bottom = -d;
+      sunLight.shadow.bias = -0.0005;
+      scene.add(sunLight);
+
+      // Build All 7 Layers of the Historical Diorama
+      buildMuseumPedestal();
+      buildTerrainRocksAndTrails();
+      buildCustomGLSLWaterAndWaterfall();
+      buildEveryBladeOfGrassAndFoliage();
+      buildEveryHouseAndStructure();
+      buildEveryLampAndLight();
+      buildVehiclesBoatsAndBattlefield();
+
+      window.addEventListener('resize', onWindowResize);
+      animate();
+    }
+
+    // ============================================================================
+    // 4. OCTAGONAL BLACK-GOLD MARBLE MUSEUM PEDESTAL & FRONT PLAQUE
+    // ============================================================================
+    function createPedestalPlaqueTexture() {
+      const c = document.createElement('canvas');
+      c.width = 1024;
+      c.height = 256;
+      const ctx = c.getContext('2d');
+
+      const grad = ctx.createLinearGradient(0, 0, 1024, 256);
+      grad.addColorStop(0, '#0c0a09');
+      grad.addColorStop(0.5, '#1c1917');
+      grad.addColorStop(1, '#0c0a09');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1024, 256);
+
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.12)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 18; i++) {
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * 1024, 0);
+        ctx.bezierCurveTo(
+          Math.random() * 1024, 80,
+          Math.random() * 1024, 180,
+          Math.random() * 1024, 256
+        );
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 5;
+      ctx.strokeRect(18, 18, 988, 220);
+      ctx.strokeStyle = 'rgba(253, 224, 71, 0.55)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(28, 28, 968, 200);
+
+      ctx.fillStyle = '#fde047';
+      ctx.font = 'bold 42px "Cinzel", "Playfair Display", Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(212, 175, 55, 0.65)';
+      ctx.shadowBlur = 12;
+      ctx.fillText('HAI MIỀN – MỘT KHÁT VỌNG THỐNG NHẤT', 512, 118);
+
+      ctx.shadowBlur = 4;
+      ctx.fillStyle = '#d4af37';
+      ctx.font = 'bold 24px Georgia, serif';
+      ctx.fillText('─── ❖ ❁ ❖ ───', 512, 178);
+
+      return new THREE.CanvasTexture(c);
+    }
+
+    function buildMuseumPedestal() {
+      const pedGroup = new THREE.Group();
+
+      const pts = [
+        new THREE.Vector2(-14.8, 12.6),
+        new THREE.Vector2(14.8, 12.6),
+        new THREE.Vector2(18.6, 9.4),
+        new THREE.Vector2(18.6, -9.4),
+        new THREE.Vector2(14.8, -12.6),
+        new THREE.Vector2(-14.8, -12.6),
+        new THREE.Vector2(-18.6, -9.4),
+        new THREE.Vector2(-18.6, 9.4)
+      ];
+
+      const shape = new THREE.Shape(pts);
+      const extrudeGeo = new THREE.ExtrudeGeometry(shape, {
+        depth: 2.6,
+        bevelEnabled: true,
+        bevelSegments: 2,
+        steps: 1,
+        bevelSize: 0.18,
+        bevelThickness: 0.18
+      });
+      extrudeGeo.rotateX(Math.PI / 2);
+
+      const marbleMat = new THREE.MeshStandardMaterial({
+        color: 0x141210,
+        roughness: 0.25,
+        metalness: 0.35
+      });
+      const pedMesh = new THREE.Mesh(extrudeGeo, marbleMat);
+      pedMesh.position.y = 0.1;
+      pedMesh.receiveShadow = true;
+      pedGroup.add(pedMesh);
+
+      const plaqueTex = createPedestalPlaqueTexture();
+      const plaqueMat = new THREE.MeshStandardMaterial({
+        map: plaqueTex,
+        roughness: 0.3,
+        metalness: 0.4
+      });
+      const plaqueMesh = new THREE.Mesh(new THREE.PlaneGeometry(24.5, 2.25), plaqueMat);
+      plaqueMesh.position.set(0, -1.18, 12.82);
+      pedGroup.add(plaqueMesh);
+
+      baseUnderglowMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+      const underGeo = new THREE.RingGeometry(16.5, 19.6, 8);
+      underGeo.rotateX(-Math.PI / 2);
+      const underMesh = new THREE.Mesh(underGeo, baseUnderglowMat);
+      underMesh.position.y = -2.62;
+      pedGroup.add(underMesh);
+
+      scene.add(pedGroup);
+    }
+
+    // ============================================================================
+    // 5. WAR-TORN TERRAIN, ROCKY PEAKS, BOMB CRATERS & EARTHEN TRAILS
+    // ============================================================================
+    function buildTerrainRocksAndTrails() {
+      const geo = new THREE.PlaneGeometry(37.2, 25.2, 240, 165);
+      geo.rotateX(-Math.PI / 2);
+
+      const pos = geo.attributes.position;
+      const colors = new Float32Array(pos.count * 3);
+      const col = new THREE.Color();
+
+      for (let i = 0; i < pos.count; i++) {
+        let x = pos.getX(i);
+        let z = pos.getZ(i);
+
+        const maxDiag = 24.3;
+        const diag = Math.abs(x) * 0.82 + Math.abs(z);
+        if (diag > maxDiag) {
+          const scale = maxDiag / diag;
+          x *= scale;
+          z *= scale;
+          pos.setX(i, x);
+          pos.setZ(i, z);
+        }
+
+        const y = getTerrainHeight(x, z);
+        pos.setY(i, y);
+
+        const rInfo = getRoadInfo(x, z);
+        const vTrailD = getVillageTrailDist(x, z);
+
+        let craterFactor = 0;
+        for (const c of BOMB_CRATERS) {
+          const cd = Math.hypot(x - c.x, z - c.z);
+          if (cd < c.r * 1.4) {
+            craterFactor = Math.max(craterFactor, 1.0 - cd / (c.r * 1.4));
+          }
+        }
+
+        if (craterFactor > 0.25) {
+          col.setRGB(0.18, 0.14, 0.11).lerp(new THREE.Color(0x453222), 1 - craterFactor);
+        } else if (x < -7.5 && z < 0.8 && Math.abs(y - 3.85) < 0.28) {
+          col.setHex(0x6b7280);
+        } else if (rInfo.dist < 0.85 && y > 0.72) {
+          col.setHex(0xa86f3e);
+        } else if (vTrailD < 0.48 && y > 0.48) {
+          col.setHex(0xb88c52);
+        } else if (y < 0.25) {
+          // Deep Turquoise-Blue Underwater Riverbed (guarantees zero black/muddy hole under water!)
+          col.setHex(0x0284c7);
+        } else if (y < 0.52) {
+          // Bright sandy/pebbly shoreline bank
+          col.setHex(0xd6c5a3);
+        } else if (y > 4.2) {
+          const rockMix = THREE.MathUtils.clamp((y - 4.2) / 5.5, 0, 1);
+          col.setHex(0x3a4f28).lerp(new THREE.Color(0x64686e), rockMix * 0.85);
+        } else if (x > -6.5 && x < 7.2 && z > -0.2 && z < 8.5 && y < 1.35) {
+          col.setHex(0x5b7528);
+        } else if (x > 5.8 && z > -2.0 && z < 6.8) {
+          col.setHex(0x8a6842);
+        } else {
+          col.setHex(0x3b5323);
+        }
+
+        colors[i * 3] = col.r;
+        colors[i * 3 + 1] = col.g;
+        colors[i * 3 + 2] = col.b;
+      }
+
+      geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      geo.computeVertexNormals();
+
+      const terrainMat = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.88,
+        metalness: 0.05
+      });
+      const terrainMesh = new THREE.Mesh(geo, terrainMat);
+      terrainMesh.receiveShadow = true;
+      terrainMesh.castShadow = true;
+      scene.add(terrainMesh);
+
+      // Scatter 380 3D Boulders, Mountain Crags & White/Gray Shoreline Pebbles
+      const rockGeo = new THREE.DodecahedronGeometry(0.18, 1);
+      const rockMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.88 });
+      const rockInst = new THREE.InstancedMesh(rockGeo, rockMat, 380);
+      rockInst.castShadow = true;
+      rockInst.receiveShadow = true;
+
+      const dummy = new THREE.Object3D();
+      const rCol = new THREE.Color();
+      let rPlaced = 0;
+
+      for (let i = 0; i < 850 && rPlaced < 380; i++) {
+        const rx = (Math.random() - 0.5) * 35.0;
+        const rz = (Math.random() - 0.5) * 23.0;
+        if (!isInsideOctagon(rx, rz, 0.7)) continue;
+        const ry = getTerrainHeight(rx, rz);
+
+        const isMountainRock = ry > 3.6 && Math.random() < 0.65;
+        const isRiverStone = Math.abs(ry - 0.46) < 0.14 && Math.random() < 0.75;
+        const isBattleRubble = rx > 5.5 && rz > -2.5 && rz < 5.5 && ry > 0.55 && Math.random() < 0.45;
+
+        if (!isMountainRock && !isRiverStone && !isBattleRubble) continue;
+        if (getRoadInfo(rx, rz).dist < 0.75) continue;
+
+        dummy.position.set(rx, ry - 0.02, rz);
+        dummy.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
+        const sx = isMountainRock ? 0.8 + Math.random() * 1.8 : 0.32 + Math.random() * 0.65;
+        dummy.scale.set(sx, sx * (0.5 + Math.random() * 0.5), sx * (0.7 + Math.random() * 0.5));
+        dummy.updateMatrix();
+        rockInst.setMatrixAt(rPlaced, dummy.matrix);
+
+        if (isBattleRubble) {
+          rCol.setHex(0x44382c);
+        } else if (isRiverStone) {
+          rCol.setHex(0xa8a29e);
+        } else {
+          rCol.setHex(0x64748b);
+        }
+        rockInst.setColorAt(rPlaced, rCol);
+        rPlaced++;
+      }
+
+      rockInst.count = rPlaced;
+      rockInst.instanceMatrix.needsUpdate = true;
+      rockInst.instanceColor.needsUpdate = true;
+      scene.add(rockInst);
+    }
+
+    // ============================================================================
+    // 6. EVERY LAMP, STREETLIGHT & RIM LED (TỪNG CÁI ĐÈN TRÊN SA BÀN)
+    // ============================================================================
+    function buildEveryLampAndLight() {
+      streetLampGroup = new THREE.Group();
+      rimLedGroup = new THREE.Group();
+
+      const poleMat = new THREE.MeshStandardMaterial({ color: 0x27272a, metalness: 0.7, roughness: 0.3 });
+      const bulbMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+
+      function createMiniatureLampPost(x, z, height = 0.68) {
+        const y = Math.max(0.52, getTerrainHeight(x, z));
+        const post = new THREE.Group();
+        post.position.set(x, y, z);
+
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.022, height, 6), poleMat);
+        stem.position.y = height / 2;
+        post.add(stem);
+
+        const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.048, 8, 8), bulbMat);
+        bulb.position.y = height + 0.02;
+        post.add(bulb);
+        lampBulbs.push(bulb);
+
+        const haloMat = new THREE.MeshBasicMaterial({
+          color: 0xfbbf24,
+          transparent: true,
+          opacity: 0.65,
+          depthWrite: false
+        });
+        const halo = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), haloMat);
+        halo.position.y = height + 0.02;
+        post.add(halo);
+        lampHalos.push(haloMat);
+
+        streetLampGroup.add(post);
+      }
+
+      // 1. 24 Warm Beacon Lamps along Đường Trường Sơn
+      for (let i = 0; i < 24; i++) {
+        const t = i / 23;
+        const pt = getRoadPoint(t);
+        const offset = i % 2 === 0 ? 0.65 : -0.65;
+        createMiniatureLampPost(pt.x + offset, pt.z + offset * 0.4, 0.58);
+      }
+
+      // 2. Streetlights in Northern Industrial Zone, Bridge, Left Peninsula & Southern Village
+      const extraLamps = [
+        [-14.2, -0.4], [-12.5, -0.4], [-10.2, -0.4], [-9.2, -1.2],
+        [-12.4, 2.2], [-10.8, 2.5], [-9.2, 2.9],
+        [-14.0, 7.2], [-12.5, 8.2], [-11.0, 9.0],
+        [-5.8, 4.6], [-3.2, 3.6], [-0.8, 2.4], [1.2, 6.4], [3.2, 7.0],
+        [6.2, 3.4], [9.5, 4.2], [12.5, 5.2]
+      ];
+      extraLamps.forEach(([lx, lz]) => createMiniatureLampPost(lx, lz, 0.65));
+      scene.add(streetLampGroup);
+
+      // 3. 88 Warm Perimeter LED Nodes around the Octagonal Diorama Rim
+      const rimPts = [
+        [-14.5, 12.3], [14.5, 12.3], [18.3, 9.2], [18.3, -9.2],
+        [14.5, -12.3], [-14.5, -12.3], [-18.3, -9.2], [-18.3, 9.2]
+      ];
+      const ledMat = new THREE.MeshBasicMaterial({ color: 0xfde047 });
+      for (let s = 0; s < rimPts.length; s++) {
+        const [x1, z1] = rimPts[s];
+        const [x2, z2] = rimPts[(s + 1) % rimPts.length];
+        const segLeds = 11;
+        for (let k = 0; k < segLeds; k++) {
+          const t = k / segLeds;
+          const lx = THREE.MathUtils.lerp(x1, x2, t);
+          const lz = THREE.MathUtils.lerp(z1, z2, t);
+          const ly = Math.max(0.18, getTerrainHeight(lx, lz) + 0.05);
+          const led = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 6), ledMat);
+          led.position.set(lx, ly, lz);
+          rimLedGroup.add(led);
+        }
+      }
+      scene.add(rimLedGroup);
+    }
+
+    // ============================================================================
+    // 7. EVERY WATER WAVE & WATERFALL (DOUBLE-LAYER RESIN WATER + GLSL SHADER)
+    // ============================================================================
+    function buildCustomGLSLWaterAndWaterfall() {
+      // LAYER 1: Solid Luminous Turquoise-Blue Resin Base Bed at y = 0.34
+      // Ensures 100% solid vibrant blue water in every river & canal channel with zero black holes
+      const underWaterGeo = new THREE.PlaneGeometry(36.6, 24.6, 180, 120);
+      underWaterGeo.rotateX(-Math.PI / 2);
+      const uwPos = underWaterGeo.attributes.position;
+      for (let i = 0; i < uwPos.count; i++) {
+        let x = uwPos.getX(i);
+        let z = uwPos.getZ(i);
+        const maxDiag = 24.0;
+        const diag = Math.abs(x) * 0.82 + Math.abs(z);
+        if (diag > maxDiag) {
+          const s = maxDiag / diag;
+          x *= s;
+          z *= s;
+          uwPos.setX(i, x);
+          uwPos.setZ(i, z);
+        }
+        const ty = getTerrainHeight(x, z);
+        // Push underwater bed below terrain where land is high, keep at 0.34 in river channels
+        uwPos.setY(i, ty > WATER_LEVEL + 0.05 ? ty - 0.18 : 0.34);
+      }
+      underWaterGeo.computeVertexNormals();
+      const underWaterMat = new THREE.MeshStandardMaterial({
+        color: 0x0284c7,
+        emissive: 0x0369a1,
+        emissiveIntensity: 0.45,
+        roughness: 0.2,
+        metalness: 0.1
+      });
+      const underWaterMesh = new THREE.Mesh(underWaterGeo, underWaterMat);
+      scene.add(underWaterMesh);
+
+      // LAYER 2: High-Density Animated GLSL Wave & White Shoreline Foam Surface at y = WATER_LEVEL (0.45)
+      const waterGeo = new THREE.PlaneGeometry(36.8, 24.8, 260, 180);
+      waterGeo.rotateX(-Math.PI / 2);
+
+      const wPos = waterGeo.attributes.position;
+      const shoreDepthAttr = new Float32Array(wPos.count);
+
+      for (let i = 0; i < wPos.count; i++) {
+        let x = wPos.getX(i);
+        let z = wPos.getZ(i);
+        const maxDiag = 24.1;
+        const diag = Math.abs(x) * 0.82 + Math.abs(z);
+        if (diag > maxDiag) {
+          const s = maxDiag / diag;
+          x *= s;
+          z *= s;
+          wPos.setX(i, x);
+          wPos.setZ(i, z);
+        }
+        const terrainY = getTerrainHeight(x, z);
+        shoreDepthAttr[i] = WATER_LEVEL - terrainY;
+      }
+      waterGeo.setAttribute('aDepth', new THREE.BufferAttribute(shoreDepthAttr, 1));
+
+      waterMaterial = new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: true,
+        side: THREE.DoubleSide,
+        uniforms: {
+          uTime: { value: 0 },
+          uWaveHeight: { value: 1.0 },
+          uWaterSpeed: { value: 1.0 },
+          uSunDir: { value: new THREE.Vector3(0.5, 0.8, 0.4).normalize() }
+        },
+        vertexShader: `
+          uniform float uTime;
+          uniform float uWaveHeight;
+          uniform float uWaterSpeed;
+          attribute float aDepth;
+          varying float vDepth;
+          varying vec3 vWorldPos;
+          varying float vWave;
+          varying float vFoamNoise;
+
+          void main() {
+            vDepth = aDepth;
+            vec3 pos = position;
+            float t = uTime * uWaterSpeed;
+
+            float ampMask = clamp(aDepth * 2.2, 0.0, 1.0);
+
+            float w1 = sin(pos.x * 2.8 + t * 3.4 + pos.z * 1.6) * 0.038;
+            float w2 = cos(pos.x * 5.6 - t * 4.2 + pos.z * 4.4) * 0.022;
+            float w3 = sin((pos.x - pos.z) * 9.5 + t * 6.2) * 0.012;
+            float w4 = cos(pos.x * 14.0 + pos.z * 12.0 - t * 7.5) * 0.007;
+
+            float wave = (w1 + w2 + w3 + w4) * uWaveHeight * ampMask;
+            // Sink vertices that are under dry land so they never poke through terrain
+            if (aDepth < -0.02) {
+              pos.y -= 0.35;
+            } else {
+              pos.y += wave;
+            }
+            vWave = wave;
+            vFoamNoise = sin(pos.x * 8.5 + t * 4.2) * cos(pos.z * 8.5 - t * 3.6);
+
+            vec4 worldPosition = modelMatrix * vec4(pos, 1.0);
+            vWorldPos = worldPosition.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPosition;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform float uWaterSpeed;
+          varying float vDepth;
+          varying vec3 vWorldPos;
+          varying float vWave;
+          varying float vFoamNoise;
+
+          void main() {
+            if (vDepth < -0.03) discard;
+
+            float t = uTime * uWaterSpeed;
+            // Crystal-clear vibrant epoxy resin blue & turquoise matching the reference diorama
+            vec3 deepColor = vec3(0.01, 0.44, 0.88);
+            vec3 midColor = vec3(0.05, 0.68, 0.98);
+            vec3 shallowColor = vec3(0.38, 0.90, 1.0);
+
+            float depthFactor = clamp(vDepth / 0.78, 0.0, 1.0);
+            vec3 waterCol = mix(shallowColor, mix(midColor, deepColor, depthFactor), depthFactor);
+
+            // Animated wave crests & bright white water foam streaks
+            float crest = smoothstep(0.008, 0.036, vWave);
+            float whitecap = smoothstep(0.018, 0.044, vWave + vFoamNoise * 0.015);
+            float sparkle1 = sin(vWorldPos.x * 9.5 + t * 4.8) * cos(vWorldPos.z * 9.5 - t * 4.2);
+            float sparkle2 = sin(vWorldPos.x * 19.0 - t * 6.5) * cos(vWorldPos.z * 17.0 + t * 5.5);
+            float glint = smoothstep(0.58, 0.92, sparkle1) + smoothstep(0.70, 0.96, sparkle2) * 0.90;
+
+            waterCol += vec3(0.30, 0.50, 0.66) * crest;
+            waterCol = mix(waterCol, vec3(0.98, 0.99, 1.0), whitecap * 0.78);
+            waterCol += vec3(0.96, 0.99, 1.0) * glint * 0.62;
+
+            // Double white foam ring along riverbanks, islands & bridge piers
+            float outerFoam = smoothstep(0.28, 0.02, vDepth);
+            float innerFoam = smoothstep(0.11, -0.02, vDepth);
+            float foamWave = 0.5 + 0.5 * sin(vWorldPos.x * 11.5 + vWorldPos.z * 11.5 - t * 5.5);
+            float totalShoreFoam = clamp(innerFoam * 0.96 + outerFoam * foamWave * 0.65, 0.0, 1.0);
+
+            // Extra churning whitewater foam pool below the Hydroelectric Dam waterfall & bridge piers
+            float damDist = length(vWorldPos.xz - vec2(-11.45, 0.85));
+            float damFoam = smoothstep(2.8, 0.40, damDist) * (0.75 + 0.25 * sin(damDist * 14.0 - t * 8.5));
+
+            waterCol = mix(waterCol, vec3(0.99, 1.0, 1.0), clamp(totalShoreFoam + damFoam, 0.0, 1.0));
+
+            float edgeAlpha = smoothstep(-0.03, 0.025, vDepth);
+            gl_FragColor = vec4(waterCol, 0.97 * edgeAlpha);
+          }
+        `
+      });
+
+      const waterMesh = new THREE.Mesh(waterGeo, waterMaterial);
+      waterMesh.position.y = WATER_LEVEL;
+      waterMesh.renderOrder = 2;
+      scene.add(waterMesh);
+
+      // 2. Hydroelectric Dam 4 Spillway Waterfall Chutes (Thác đập thủy điện 4 cửa xả)
+      waterfallMaterial = new THREE.ShaderMaterial({
+        transparent: true,
+        side: THREE.DoubleSide,
+        uniforms: {
+          uTime: { value: 0 },
+          uSpeed: { value: 1.0 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform float uSpeed;
+          varying vec2 vUv;
+          void main() {
+            float t = uTime * uSpeed * 3.8;
+            float streak1 = sin(vUv.x * 42.0) * 0.5 + 0.5;
+            float streak2 = cos(vUv.x * 26.0 + t * 2.0) * 0.5 + 0.5;
+            float foam = smoothstep(0.10, 0.80, sin(vUv.y * 28.0 + t * 6.28 + streak1 * 3.5) * 0.5 + 0.5);
+            float bottomSplash = smoothstep(0.38, 0.0, vUv.y);
+            float topCrest = smoothstep(0.80, 1.0, vUv.y);
+            vec3 baseBlue = vec3(0.10, 0.74, 1.0);
+            vec3 whiteFoam = vec3(0.99, 1.0, 1.0);
+            vec3 col = mix(baseBlue, whiteFoam, clamp(foam * 0.85 + bottomSplash + topCrest * 0.75 + streak2 * 0.30, 0.0, 1.0));
+            gl_FragColor = vec4(col, 0.98);
+          }
+        `
+      });
+
+      const chuteGroup = new THREE.Group();
+      for (let i = 0; i < 4; i++) {
+        const chuteGeo = new THREE.PlaneGeometry(0.66, 3.4, 8, 16);
+        const chute = new THREE.Mesh(chuteGeo, waterfallMaterial);
+        chute.position.set(-12.7 + i * 0.82, 1.98, 0.05);
+        chute.rotation.x = -0.32;
+        chuteGroup.add(chute);
+      }
+
+      // Boiling Whitewater Foam Bubbles at Base of Dam Waterfall
+      const foamMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.94
+      });
+      for (let i = 0; i < 42; i++) {
+        const r = 0.09 + Math.random() * 0.19;
+        const bubble = new THREE.Mesh(new THREE.DodecahedronGeometry(r, 1), foamMat);
+        const bx = -13.1 + Math.random() * 3.3;
+        const by = WATER_LEVEL + 0.04 + Math.random() * 0.28;
+        const bz = 0.30 + Math.random() * 0.95;
+        bubble.position.set(bx, by, bz);
+        chuteGroup.add(bubble);
+        waterfallSplashParticles.push({
+          mesh: bubble,
+          baseY: by,
+          baseScale: 0.75 + Math.random() * 0.65,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      scene.add(chuteGroup);
+    }
+
+    // ============================================================================
+    // 8. REALISTIC LOW GRASS, LUSH SHRUBBERY, REEDS & LIFELIKE TREES
+    //    (Strict footprint filtering: ZERO floating grass or grass on house roofs!)
+    // ============================================================================
+    function buildEveryBladeOfGrassAndFoliage() {
+      const BLADE_COUNT = 42000;
+      const bladeGeo = new THREE.BufferGeometry();
+      const bladeVerts = new Float32Array([
+        -0.020, 0.0,   0.0,
+         0.020, 0.0,   0.0,
+        -0.014, 0.085, 0.006,
+         0.014, 0.085, 0.006,
+         0.0,   0.175, 0.018
+      ]);
+      const bladeUvs = new Float32Array([
+        0, 0,
+        1, 0,
+        0, 0.5,
+        1, 0.5,
+        0.5, 1.0
+      ]);
+      const bladeIndices = [0, 1, 2, 2, 1, 3, 2, 3, 4];
+      bladeGeo.setAttribute('position', new THREE.BufferAttribute(bladeVerts, 3));
+      bladeGeo.setAttribute('uv', new THREE.BufferAttribute(bladeUvs, 2));
+      bladeGeo.setIndex(bladeIndices);
+      bladeGeo.computeVertexNormals();
+
+      grassMaterial = new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        uniforms: {
+          uTime: { value: 0 },
+          uWindSpeed: { value: 1.0 },
+          uGrassScale: { value: params.grassScale }
+        },
+        vertexShader: `
+          uniform float uTime;
+          uniform float uWindSpeed;
+          uniform float uGrassScale;
+          varying vec2 vUv;
+          varying vec3 vColor;
+
+          void main() {
+            vUv = uv;
+            vColor = instanceColor;
+
+            vec3 pos = position;
+            pos.y *= uGrassScale;
+
+            vec4 worldRoot = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+            float windWave = sin(uTime * 2.6 * uWindSpeed + worldRoot.x * 0.85 + worldRoot.z * 0.75);
+            float gust = cos(uTime * 1.5 * uWindSpeed - worldRoot.x * 0.45 + worldRoot.z * 0.9) * 0.5;
+
+            float bend = (windWave * 0.048 + gust * 0.025) * uv.y * uv.y;
+            pos.x += bend;
+            pos.z += bend * 0.6;
+
+            vec4 worldPos = instanceMatrix * vec4(pos, 1.0);
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          varying vec2 vUv;
+          varying vec3 vColor;
+
+          void main() {
+            vec3 rootCol = vColor * 0.48;
+            vec3 tipCol = vColor * 1.28 + vec3(0.06, 0.09, 0.02);
+            vec3 finalCol = mix(rootCol, tipCol, vUv.y);
+            gl_FragColor = vec4(finalCol, 1.0);
+          }
+        `
+      });
+
+      grassMesh = new THREE.InstancedMesh(bladeGeo, grassMaterial, BLADE_COUNT);
+      grassMesh.frustumCulled = false;
+      const dummy = new THREE.Object3D();
+      const color = new THREE.Color();
+
+      let placed = 0;
+      let attempts = 0;
+      while (placed < BLADE_COUNT && attempts < BLADE_COUNT * 6) {
+        attempts++;
+        const x = (Math.random() - 0.5) * 35.8;
+        const z = (Math.random() - 0.5) * 23.8;
+        if (!isInsideOctagon(x, z, 0.48)) continue;
+
+        const y = getTerrainHeight(x, z);
+        // Strictly above water surface + shoreline buffer
+        if (y < WATER_LEVEL + 0.11) continue;
+        // Strictly exclude all houses, factories, bridges, and towers
+        if (isNearAnyBuildingOrBridge(x, z)) continue;
+
+        const rInfo = getRoadInfo(x, z);
+        if (rInfo.dist < 0.88 && y > 0.72) continue;
+        const vTrailD = getVillageTrailDist(x, z);
+        if (vTrailD < 0.48) continue;
+
+        let inCrater = false;
+        let nearCrater = false;
+        for (const c of BOMB_CRATERS) {
+          const cd = Math.hypot(x - c.x, z - c.z);
+          if (cd < c.r * 0.95) { inCrater = true; break; }
+          if (cd < c.r * 1.55) { nearCrater = true; }
+        }
+        if (inCrater) continue;
+
+        dummy.position.set(x, y - 0.015, z);
+        dummy.rotation.set(
+          (Math.random() - 0.5) * 0.18,
+          Math.random() * Math.PI * 2,
+          (Math.random() - 0.5) * 0.18
+        );
+        const s = 0.55 + Math.random() * 0.65;
+        dummy.scale.set(s, s * (0.65 + Math.random() * 0.45), s);
+        dummy.updateMatrix();
+        grassMesh.setMatrixAt(placed, dummy.matrix);
+
+        if (nearCrater || (x > 6.2 && z > -2.5 && z < 7.5 && Math.random() < 0.65)) {
+          color.setHSL(0.11 + Math.random() * 0.06, 0.58, 0.28 + Math.random() * 0.12);
+        } else if (y < 0.64) {
+          color.setHSL(0.31 + (Math.random() - 0.5) * 0.05, 0.72, 0.28 + Math.random() * 0.12);
+        } else if (x > -6.5 && x < 7.2 && z > -0.2 && z < 8.5 && y < 1.35) {
+          color.setHSL(0.22 + (Math.random() - 0.5) * 0.04, 0.74, 0.36 + Math.random() * 0.1);
+        } else {
+          color.setHSL(0.27 + (Math.random() - 0.5) * 0.06, 0.64, 0.24 + Math.random() * 0.12);
+        }
+        grassMesh.setColorAt(placed, color);
+        placed++;
+      }
+
+      grassMesh.count = placed;
+      grassMesh.instanceMatrix.needsUpdate = true;
+      grassMesh.instanceColor.needsUpdate = true;
+      scene.add(grassMesh);
+
+      // --- B. REALISTIC COCONUT PALMS WITH FEATHERED PINNATE LEAFLETS (TÀU DỪA XẺ LÁ THẬT) ---
+      const palmGroup = new THREE.Group();
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4028, roughness: 0.92 });
+      const scorchedTrunkMat = new THREE.MeshStandardMaterial({ color: 0x261c14, roughness: 0.96 });
+      const coconutMat = new THREE.MeshStandardMaterial({ color: 0x4a3219, roughness: 0.75 });
+
+      function createPalmFrondTexture() {
+        const c = document.createElement('canvas');
+        c.width = 256;
+        c.height = 128;
+        const ctx = c.getContext('2d');
+        ctx.clearRect(0, 0, 256, 128);
+
+        ctx.fillStyle = '#3f6a1e';
+        ctx.fillRect(4, 61, 244, 6);
+
+        for (let i = 0; i < 26; i++) {
+          const t = i / 26;
+          const x = 10 + t * 235;
+          const len = Math.sin(Math.pow(t, 0.65) * Math.PI) * 56;
+          if (len < 4) continue;
+
+          ctx.fillStyle = i % 2 === 0 ? '#2f6e1e' : '#3d7d25';
+          ctx.beginPath();
+          ctx.moveTo(x, 63);
+          ctx.quadraticCurveTo(x + 6, 63 - len * 0.55, x + 14, 63 - len);
+          ctx.quadraticCurveTo(x + 3, 63 - len * 0.45, x + 4, 63);
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(x, 65);
+          ctx.quadraticCurveTo(x + 6, 65 + len * 0.55, x + 14, 65 + len);
+          ctx.quadraticCurveTo(x + 3, 65 + len * 0.45, x + 4, 65);
+          ctx.fill();
+        }
+        const tex = new THREE.CanvasTexture(c);
+        tex.anisotropy = 4;
+        return tex;
+      }
+
+      const frondMat = new THREE.MeshStandardMaterial({
+        map: createPalmFrondTexture(),
+        alphaTest: 0.35,
+        roughness: 0.65,
+        side: THREE.DoubleSide
+      });
+
+      function createCoconutPalm(x, z, scale = 1.0, warDamaged = false) {
+        const y = getTerrainHeight(x, z);
+        if (y < 0.48) return;
+        const palm = new THREE.Group();
+        palm.position.set(x, y, z);
+
+        const leanX = (Math.random() - 0.5) * 0.42;
+        const leanZ = (Math.random() - 0.5) * 0.42;
+        const segs = 7;
+        let curX = 0, curY = 0, curZ = 0;
+
+        for (let i = 0; i < segs; i++) {
+          const rBottom = (0.105 - i * 0.009) * scale;
+          const rTop = (0.094 - i * 0.009) * scale;
+          const hSeg = 0.25 * scale;
+          const segGeo = new THREE.CylinderGeometry(rTop, rBottom, hSeg, 7);
+          const segMesh = new THREE.Mesh(segGeo, warDamaged ? scorchedTrunkMat : trunkMat);
+          curX += leanX * (i / segs) * 0.13 * scale;
+          curZ += leanZ * (i / segs) * 0.13 * scale;
+          segMesh.position.set(curX, curY + hSeg * 0.5, curZ);
+          segMesh.rotation.set(leanZ * 0.25, 0, -leanX * 0.25);
+          segMesh.castShadow = true;
+          palm.add(segMesh);
+          curY += hSeg * 0.94;
+        }
+
+        if (!warDamaged) {
+          for (let c = 0; c < 4; c++) {
+            const coco = new THREE.Mesh(new THREE.SphereGeometry(0.048 * scale, 6, 6), coconutMat);
+            const ca = (c / 4) * Math.PI * 2;
+            coco.position.set(curX + Math.cos(ca) * 0.055 * scale, curY - 0.04 * scale, curZ + Math.sin(ca) * 0.055 * scale);
+            palm.add(coco);
+          }
+        }
+
+        const frondCount = warDamaged ? 5 : 13;
+        for (let f = 0; f < frondCount; f++) {
+          const angle = (f / frondCount) * Math.PI * 2 + (f % 2) * 0.18;
+          const frondHolder = new THREE.Group();
+          frondHolder.position.set(curX, curY, curZ);
+          frondHolder.rotation.y = angle;
+          frondHolder.rotation.z = warDamaged ? -0.35 : (f < 5 ? 0.42 : 0.12);
+
+          const leafGeo = new THREE.PlaneGeometry(0.88 * scale, 0.42 * scale, 6, 2);
+          const lPos = leafGeo.attributes.position;
+          for (let k = 0; k < lPos.count; k++) {
+            const lx = Math.max(0, lPos.getX(k) + 0.44 * scale);
+            const ly = lPos.getY(k);
+            lPos.setX(k, lx);
+            const arch = -Math.pow(Math.max(0, lx / (0.88 * scale)), 1.85) * 0.34 * scale;
+            const vFold = -Math.abs(ly) * 0.25;
+            lPos.setZ(k, arch + vFold);
+          }
+          leafGeo.computeVertexNormals();
+          const leafMesh = new THREE.Mesh(leafGeo, frondMat);
+          leafMesh.rotation.x = Math.PI / 2;
+          leafMesh.castShadow = true;
+          frondHolder.add(leafMesh);
+          palm.add(frondHolder);
+        }
+
+        palmGroup.add(palm);
+      }
+
+      const palmCoords = [
+        // Center-front & river bend coconut-palm islands (Cù lao dừa xanh mướt giữa vịnh sông)
+        [-1.35, 9.95, 1.05, false], [-0.85, 10.2, 1.12, false], [-0.35, 9.95, 0.96, false], [-0.9, 9.65, 0.90, false],
+        [-7.95, 7.15, 0.98, false], [-7.65, 7.25, 0.88, false],
+        // Left foreground village peninsula (Bán đảo làng quê bên trái tiền cảnh)
+        [-15.2, 7.2, 1.05, false], [-14.2, 6.8, 1.12, false], [-12.9, 6.4, 1.08, false], [-11.5, 7.3, 1.05, false],
+        [-14.6, 8.6, 0.98, false], [-13.2, 9.3, 1.05, false], [-11.8, 9.7, 0.95, false], [-10.3, 9.9, 0.92, false],
+        [-15.8, 8.2, 0.95, false], [-12.5, 7.9, 1.08, false],
+        // Southern village, wooden bridge approach & diagonal canal banks
+        [-4.2, 5.2, 1.05, false], [-2.6, 6.2, 0.98, false], [-1.2, 7.2, 1.10, false], [0.2, 7.5, 1.05, false],
+        [2.0, 7.9, 1.12, false], [3.9, 8.5, 0.98, false], [5.4, 9.0, 1.05, false], [7.5, 9.6, 1.0, false],
+        [-5.8, 2.5, 0.95, false], [-2.2, 1.2, 1.0, false], [1.2, -0.4, 0.98, false], [4.2, -1.8, 1.05, false],
+        // Right side & Ap Chien Luoc war-zone palms
+        [8.5, -3.5, 1.15, false], [10.8, -4.2, 1.1, false], [13.2, -4.8, 1.2, false], [15.2, -1.2, 1.1, false],
+        [16.0, 0.8, 1.15, false], [15.8, 2.8, 1.05, false], [14.5, 5.5, 1.0, false], [12.5, 7.8, 1.05, false],
+        [6.5, -2.5, 1.0, false], [7.8, -3.0, 1.05, true], [10.4, 1.4, 0.95, true]
+      ];
+      palmCoords.forEach(([px, pz, ps, dmg]) => createCoconutPalm(px, pz, ps, dmg));
+      scene.add(palmGroup);
+
+      // --- C. REALISTIC BROADLEAF FOREST TREES: WOODEN TRUNKS, Y-BRANCHES & FLAT LEAF SPRAYS ---
+      function createBroadleafBranchTexture() {
+        const c = document.createElement('canvas');
+        c.width = 256;
+        c.height = 256;
+        const ctx = c.getContext('2d');
+        ctx.clearRect(0, 0, 256, 256);
+
+        ctx.strokeStyle = '#3b2818';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(128, 240);
+        ctx.lineTo(128, 40);
+        ctx.moveTo(128, 170);
+        ctx.lineTo(55, 95);
+        ctx.moveTo(128, 150);
+        ctx.lineTo(205, 85);
+        ctx.moveTo(128, 100);
+        ctx.lineTo(75, 45);
+        ctx.moveTo(128, 95);
+        ctx.lineTo(185, 40);
+        ctx.stroke();
+
+        for (let i = 0; i < 38; i++) {
+          const ang = (i / 38) * Math.PI * 2 + (i % 3) * 0.4;
+          const dist = 22 + (i % 5) * 20;
+          const lx = 128 + Math.cos(ang) * dist * 0.95;
+          const ly = 122 + Math.sin(ang) * dist * 0.85;
+
+          ctx.save();
+          ctx.translate(lx, ly);
+          ctx.rotate(ang + Math.PI / 2);
+
+          ctx.fillStyle = i % 3 === 0 ? '#2d5a1e' : i % 3 === 1 ? '#3b6e23' : '#4d7c2b';
+          ctx.beginPath();
+          ctx.moveTo(0, 18);
+          ctx.quadraticCurveTo(-13, 0, 0, -24);
+          ctx.quadraticCurveTo(13, 0, 0, 18);
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(180, 220, 120, 0.35)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(0, 14);
+          ctx.lineTo(0, -18);
+          ctx.stroke();
+          ctx.restore();
+        }
+        const tex = new THREE.CanvasTexture(c);
+        tex.anisotropy = 4;
+        return tex;
+      }
+
+      const branchLeafTex = createBroadleafBranchTexture();
+      const leafPlaneMat = new THREE.MeshStandardMaterial({
+        map: branchLeafTex,
+        alphaTest: 0.38,
+        roughness: 0.72,
+        side: THREE.DoubleSide
+      });
+
+      const MAX_WOOD_SEGMENTS = 3800;
+      const MAX_LEAF_CARDS = 8800;
+
+      const woodCylGeo = new THREE.CylinderGeometry(0.045, 0.085, 1.0, 6);
+      woodCylGeo.translate(0, 0.5, 0);
+      const woodBarkMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.92 });
+      const woodInst = new THREE.InstancedMesh(woodCylGeo, woodBarkMat, MAX_WOOD_SEGMENTS);
+      woodInst.castShadow = true;
+      woodInst.receiveShadow = true;
+
+      const leafCardGeo = new THREE.PlaneGeometry(0.62, 0.62, 2, 2);
+      const lcPos = leafCardGeo.attributes.position;
+      for (let i = 0; i < lcPos.count; i++) {
+        const vx = lcPos.getX(i), vy = lcPos.getY(i);
+        lcPos.setZ(i, -(vx * vx + vy * vy) * 0.35);
+      }
+      leafCardGeo.computeVertexNormals();
+
+      const leafInst = new THREE.InstancedMesh(leafCardGeo, leafPlaneMat, MAX_LEAF_CARDS);
+      leafInst.castShadow = true;
+      leafInst.receiveShadow = true;
+
+      let wCount = 0;
+      let lCount = 0;
+      const upVec = new THREE.Vector3(0, 1, 0);
+      const dirVec = new THREE.Vector3();
+      const quat = new THREE.Quaternion();
+      const barkCol = new THREE.Color();
+      const leafCol = new THREE.Color();
+
+      function addWoodSegment(p1, p2, radiusScale, isScorched) {
+        if (wCount >= MAX_WOOD_SEGMENTS) return;
+        dirVec.subVectors(p2, p1);
+        const len = dirVec.length();
+        if (len < 0.01) return;
+        quat.setFromUnitVectors(upVec, dirVec.clone().normalize());
+        dummy.position.copy(p1);
+        dummy.quaternion.copy(quat);
+        dummy.scale.set(radiusScale, len, radiusScale);
+        dummy.updateMatrix();
+        woodInst.setMatrixAt(wCount, dummy.matrix);
+        barkCol.setHex(isScorched ? 0x241c18 : 0x543b26);
+        woodInst.setColorAt(wCount, barkCol);
+        wCount++;
+      }
+
+      function addLeafSprayCluster(centerPos, scale, hueShift) {
+        for (let k = 0; k < 3; k++) {
+          if (lCount >= MAX_LEAF_CARDS) return;
+          dummy.position.set(
+            centerPos.x + (Math.random() - 0.5) * 0.16 * scale,
+            centerPos.y + k * 0.06 * scale,
+            centerPos.z + (Math.random() - 0.5) * 0.16 * scale
+          );
+          dummy.rotation.set(
+            (Math.random() - 0.5) * 0.95,
+            (k * Math.PI) / 3 + Math.random() * 0.8,
+            (Math.random() - 0.5) * 0.95
+          );
+          const s = (0.68 + Math.random() * 0.45) * scale;
+          dummy.scale.set(s, s, s);
+          dummy.updateMatrix();
+          leafInst.setMatrixAt(lCount, dummy.matrix);
+          leafCol.setHSL(0.26 + hueShift, 0.65, 0.34 + Math.random() * 0.16);
+          leafInst.setColorAt(lCount, leafCol);
+          lCount++;
+        }
+      }
+
+      let treesPlaced = 0;
+      for (let attempt = 0; attempt < 1800 && treesPlaced < 420; attempt++) {
+        const tx = -17.2 + Math.random() * 31.0;
+        const tz = -11.8 + Math.random() * 18.0;
+        if (!isInsideOctagon(tx, tz, 0.9)) continue;
+        const ty = getTerrainHeight(tx, tz);
+        if (ty < 0.72) continue;
+
+        if (isNearAnyBuildingOrBridge(tx, tz)) continue;
+        const rInfo = getRoadInfo(tx, tz);
+        if (rInfo.dist < 1.05) continue;
+        if (getVillageTrailDist(tx, tz) < 0.75) continue;
+        if (tx > -5.5 && tx < 5.5 && tz > 0.2 && tz < 7.5 && Math.random() < 0.85) continue;
+
+        let warShattered = false;
+        for (const c of BOMB_CRATERS) {
+          if (Math.hypot(tx - c.x, tz - c.z) < c.r * 1.65) {
+            warShattered = true;
+            break;
+          }
+        }
+        if (tx > 7.5 && tz > -2.0 && tz < 4.5 && Math.random() < 0.45) {
+          warShattered = true;
+        }
+
+        const tScale = 0.65 + Math.random() * 0.75;
+        const trunkH = (0.48 + Math.random() * 0.38) * tScale;
+
+        const pBase = new THREE.Vector3(tx, ty - 0.03, tz);
+        const pMid = new THREE.Vector3(
+          tx + (Math.random() - 0.5) * 0.14 * tScale,
+          ty + trunkH * 0.55,
+          tz + (Math.random() - 0.5) * 0.14 * tScale
+        );
+        const pTop = new THREE.Vector3(
+          pMid.x + (Math.random() - 0.5) * 0.18 * tScale,
+          ty + trunkH,
+          pMid.z + (Math.random() - 0.5) * 0.18 * tScale
+        );
+
+        addWoodSegment(pBase, pMid, 1.05 * tScale, warShattered);
+        addWoodSegment(pMid, pTop, 0.78 * tScale, warShattered);
+
+        const branchCount = warShattered ? 3 : 4 + (attempt % 2);
+        const hueShift = (Math.random() - 0.5) * 0.07;
+
+        for (let b = 0; b < branchCount; b++) {
+          const bAngle = (b / branchCount) * Math.PI * 2 + Math.random() * 0.5;
+          const bSpread = (0.28 + Math.random() * 0.24) * tScale;
+          const bRise = (0.22 + Math.random() * 0.25) * tScale;
+          const pBranchEnd = new THREE.Vector3(
+            pTop.x + Math.cos(bAngle) * bSpread,
+            pTop.y + bRise,
+            pTop.z + Math.sin(bAngle) * bSpread
+          );
+          addWoodSegment(pTop, pBranchEnd, 0.48 * tScale, warShattered);
+
+          if (!warShattered) {
+            addLeafSprayCluster(pBranchEnd, tScale * 0.95, hueShift);
+          } else if (b === 0 && Math.random() < 0.35) {
+            addLeafSprayCluster(pBranchEnd, tScale * 0.55, -0.12);
+          }
+        }
+
+        if (!warShattered) {
+          addLeafSprayCluster(
+            new THREE.Vector3(pTop.x, pTop.y + 0.28 * tScale, pTop.z),
+            tScale * 1.05,
+            hueShift
+          );
+        }
+
+        treesPlaced++;
+      }
+      // Add 220 Low Leafy Shrubs along Riverbanks, Islands & Village Borders (strictly away from roofs)
+      for (let s = 0; s < 220; s++) {
+        const sx = -16.8 + Math.random() * 32.5;
+        const sz = -10.5 + Math.random() * 21.5;
+        if (!isInsideOctagon(sx, sz, 0.75)) continue;
+        const sy = getTerrainHeight(sx, sz);
+        if (sy < 0.56 || sy > 3.2) continue;
+        if (isNearAnyBuildingOrBridge(sx, sz)) continue;
+        if (getRoadInfo(sx, sz).dist < 0.95) continue;
+        if (getVillageTrailDist(sx, sz) < 0.65) continue;
+        addLeafSprayCluster(
+          new THREE.Vector3(sx, sy + 0.12, sz),
+          0.38 + Math.random() * 0.34,
+          (Math.random() - 0.5) * 0.08
+        );
+      }
+
+      woodInst.count = wCount;
+      leafInst.count = lCount;
+      woodInst.instanceMatrix.needsUpdate = true;
+      woodInst.instanceColor.needsUpdate = true;
+      leafInst.instanceMatrix.needsUpdate = true;
+      leafInst.instanceColor.needsUpdate = true;
+      scene.add(woodInst);
+      scene.add(leafInst);
+    }
+
+    // ============================================================================
+    // 9. EVERY HOUSE, FACTORY, DAM, BRIDGE & FORTIFICATION (TỪNG NGÔI NHÀ)
+    // ============================================================================
+    function createVietnamFlag(x, y, z, poleHeight = 2.6, flagScale = 1.0) {
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.03, 0.045, poleHeight, 8),
+        new THREE.MeshStandardMaterial({ color: 0xe5e7eb, metalness: 0.8, roughness: 0.2 })
+      );
+      pole.position.y = poleHeight / 2;
+      pole.castShadow = true;
+      group.add(pole);
+
+      const ball = new THREE.Mesh(
+        new THREE.SphereGeometry(0.075, 8, 8),
+        new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.9, roughness: 0.1 })
+      );
+      ball.position.y = poleHeight + 0.04;
+      group.add(ball);
+
+      const fc = document.createElement('canvas');
+      fc.width = 256;
+      fc.height = 170;
+      const ctx = fc.getContext('2d');
+      ctx.fillStyle = '#da251d';
+      ctx.fillRect(0, 0, 256, 170);
+
+      ctx.fillStyle = '#ffff00';
+      ctx.beginPath();
+      const cx = 128, cy = 85, outerR = 46, innerR = 18;
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? outerR : innerR;
+        const a = (i * Math.PI) / 5 - Math.PI / 2;
+        const sx = cx + Math.cos(a) * r;
+        const sy = cy + Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(sx, sy);
+        else ctx.lineTo(sx, sy);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      const flagTex = new THREE.CanvasTexture(fc);
+      const flagMat = new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        uniforms: {
+          uMap: { value: flagTex },
+          uTime: { value: 0 }
+        },
+        vertexShader: `
+          uniform float uTime;
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            vec3 pos = position;
+            float wave = sin(uv.x * 6.0 - uTime * 5.0) * 0.09 * uv.x;
+            pos.z += wave;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D uMap;
+          varying vec2 vUv;
+          void main() {
+            gl_FragColor = texture2D(uMap, vUv);
+          }
+        `
+      });
+      flagMaterials.push(flagMat);
+
+      const fw = 1.15 * flagScale, fh = 0.76 * flagScale;
+      const flagGeo = new THREE.PlaneGeometry(fw, fh, 12, 6);
+      flagGeo.translate(fw / 2, 0, 0);
+      const flagMesh = new THREE.Mesh(flagGeo, flagMat);
+      flagMesh.position.set(0.02, poleHeight - fh * 0.55, 0);
+      group.add(flagMesh);
+
+      scene.add(group);
+    }
+
+    function createSouthernThatchedHouse(x, z, rotY = 0, scale = 1.0) {
+      const y = Math.max(0.55, getTerrainHeight(x, z));
+      const house = new THREE.Group();
+      house.position.set(x, y, z);
+      house.rotation.y = rotY;
+      house.scale.setScalar(scale);
+
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.85 });
+      const wallMat = new THREE.MeshStandardMaterial({ color: 0x855834, roughness: 0.9 });
+      const thatchMat = new THREE.MeshStandardMaterial({ color: 0x9c7a44, roughness: 0.95 });
+      const darkThatchMat = new THREE.MeshStandardMaterial({ color: 0x7c5e30, roughness: 0.95 });
+
+      const base = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.25, 1.05), woodMat);
+      base.position.y = 0.12;
+      base.castShadow = true;
+      base.receiveShadow = true;
+      house.add(base);
+
+      const pillarPositions = [
+        [-0.65, 0.48], [0, 0.48], [0.65, 0.48],
+        [-0.65, -0.45], [0, -0.45], [0.65, -0.45]
+      ];
+      pillarPositions.forEach(([px, pz]) => {
+        const p = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.035, 0.72, 6), woodMat);
+        p.position.set(px, 0.46, pz);
+        p.castShadow = true;
+        house.add(p);
+      });
+
+      const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.22, 0.62, 0.78), wallMat);
+      cabin.position.set(0, 0.52, -0.06);
+      cabin.castShadow = true;
+      cabin.receiveShadow = true;
+      house.add(cabin);
+
+      const warmGlowMat = new THREE.MeshBasicMaterial({ color: 0xffb703 });
+      houseWindowMaterials.push(warmGlowMat);
+
+      const door = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.42), warmGlowMat);
+      door.position.set(0, 0.44, 0.335);
+      house.add(door);
+
+      [-0.36, 0.36].forEach(wx => {
+        const win = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 0.18), warmGlowMat);
+        win.position.set(wx, 0.52, 0.335);
+        house.add(win);
+      });
+
+      const roofGroup = new THREE.Group();
+      roofGroup.position.y = 0.84;
+
+      const leftSlope = new THREE.Mesh(new THREE.BoxGeometry(1.62, 0.08, 0.76), thatchMat);
+      leftSlope.position.set(0, 0.18, 0.27);
+      leftSlope.rotation.x = 0.56;
+      leftSlope.castShadow = true;
+      roofGroup.add(leftSlope);
+
+      const rightSlope = new THREE.Mesh(new THREE.BoxGeometry(1.62, 0.08, 0.76), thatchMat);
+      rightSlope.position.set(0, 0.18, -0.27);
+      rightSlope.rotation.x = -0.56;
+      rightSlope.castShadow = true;
+      roofGroup.add(rightSlope);
+
+      const ridge = new THREE.Mesh(new THREE.BoxGeometry(1.66, 0.1, 0.16), darkThatchMat);
+      ridge.position.set(0, 0.38, 0);
+      roofGroup.add(ridge);
+
+      house.add(roofGroup);
+      scene.add(house);
+    }
+
+    function buildEveryHouseAndStructure() {
+      // =========================================================================
+      // A. MIỀN BẮC: HYDROELECTRIC DAM, INDUSTRIAL FACTORIES, SMOKESTACKS & BRIDGE
+      // =========================================================================
+      const northGroup = new THREE.Group();
+      const concreteMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.65 });
+      const darkWallMat = new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.7 });
+      const roofSlateMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.6 });
+      const warmWindowMat = new THREE.MeshBasicMaterial({ color: 0xfde047 });
+      const cyanWindowMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc });
+      houseWindowMaterials.push(warmWindowMat, cyanWindowMat);
+
+      // 1. Hydroelectric Dam Wall & 5 Spillway Piers
+      const damWall = new THREE.Mesh(new THREE.BoxGeometry(3.8, 3.6, 1.3), concreteMat);
+      damWall.position.set(-11.45, 2.0, -0.45);
+      damWall.castShadow = true;
+      damWall.receiveShadow = true;
+      northGroup.add(damWall);
+
+      for (let i = 0; i < 5; i++) {
+        const pier = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.85, 1.55), darkWallMat);
+        pier.position.set(-13.1 + i * 0.82, 2.1, -0.35);
+        pier.castShadow = true;
+        northGroup.add(pier);
+      }
+
+      const upperPool = new THREE.Mesh(
+        new THREE.PlaneGeometry(3.5, 1.6),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+      );
+      upperPool.rotation.x = -Math.PI / 2;
+      upperPool.position.set(-11.45, 3.86, -0.75);
+      northGroup.add(upperPool);
+
+      // 2. Main Powerhouse & Factory Building above Dam
+      const mainFactory = new THREE.Mesh(new THREE.BoxGeometry(3.8, 1.65, 2.0), concreteMat);
+      mainFactory.position.set(-11.4, 4.65, -2.1);
+      mainFactory.castShadow = true;
+      northGroup.add(mainFactory);
+
+      const fRoof1 = new THREE.Mesh(new THREE.ConeGeometry(2.3, 0.75, 4), roofSlateMat);
+      fRoof1.position.set(-11.4, 5.82, -2.1);
+      fRoof1.rotation.y = Math.PI / 4;
+      fRoof1.scale.set(1.25, 1, 0.7);
+      northGroup.add(fRoof1);
+
+      // Rows of Illuminated Factory Windows & Spinning Hydroelectric Turbine Rotors
+      const turbineRotorMat = new THREE.MeshStandardMaterial({
+        color: 0xfde047,
+        emissive: 0xd97706,
+        emissiveIntensity: 0.7,
+        metalness: 0.8,
+        roughness: 0.2
+      });
+      for (let r = 0; r < 2; r++) {
+        for (let c = 0; c < 7; c++) {
+          const wMat = r === 0 ? cyanWindowMat : warmWindowMat;
+          const win = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.34), wMat);
+          win.position.set(-12.9 + c * 0.48, 4.3 + r * 0.65, -1.08);
+          northGroup.add(win);
+
+          if (r === 0 && c % 2 === 1) {
+            // Visible Spinning Hydro-Generator Rotor inside lower turbine hall
+            const rotor = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.025, 6, 8), turbineRotorMat);
+            rotor.position.set(-12.9 + c * 0.48, 4.3, -1.05);
+            northGroup.add(rotor);
+            hydroTurbines.push(rotor);
+          }
+        }
+      }
+
+      // 3. Left Wing Industrial Workshop Complex
+      const leftFactory = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.45, 1.9), concreteMat);
+      leftFactory.position.set(-14.9, 4.55, -1.7);
+      leftFactory.castShadow = true;
+      northGroup.add(leftFactory);
+
+      const leftRoof = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.18, 2.1), roofSlateMat);
+      leftRoof.position.set(-14.9, 5.35, -1.7);
+      northGroup.add(leftRoof);
+
+      for (let r = 0; r < 2; r++) {
+        for (let c = 0; c < 5; c++) {
+          const win = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.32), warmWindowMat);
+          win.position.set(-15.9 + c * 0.5, 4.25 + r * 0.55, -0.73);
+          northGroup.add(win);
+        }
+      }
+
+      // 4. Two Tall Red-and-White Striped Smokestacks + Animated Rising Steam Plumes
+      const redStripeMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.5 });
+      const whiteStripeMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 });
+      const steamMat = new THREE.MeshBasicMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.55 });
+
+      [-10.1, -9.35].forEach(sx => {
+        const stack = new THREE.Group();
+        stack.position.set(sx, 3.85, -2.2);
+        for (let s = 0; s < 6; s++) {
+          const seg = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.15 - s * 0.008, 0.16 - s * 0.008, 0.42, 12),
+            s % 2 === 0 ? whiteStripeMat : redStripeMat
+          );
+          seg.position.y = 0.21 + s * 0.42;
+          seg.castShadow = true;
+          stack.add(seg);
+        }
+        // 5 Rising Steam Puffs per smokestack
+        for (let p = 0; p < 5; p++) {
+          const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(0.12 + p * 0.04, 1), steamMat);
+          puff.position.set(0, 2.6 + p * 0.28, 0);
+          stack.add(puff);
+          smokestackPlumes.push({
+            mesh: puff,
+            idx: p,
+            phase: Math.random() * Math.PI * 2
+          });
+        }
+        northGroup.add(stack);
+      });
+
+      // 5. Concrete Highway Bridge across Upper River Basin (Cầu bê tông 2 trụ lớn trước thác thủy điện)
+      const bridgeGroup = new THREE.Group();
+      bridgeGroup.position.set(-10.8, 1.85, 2.75);
+      bridgeGroup.rotation.y = -0.22;
+
+      const deck = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.26, 1.38), concreteMat);
+      deck.castShadow = true;
+      deck.receiveShadow = true;
+      bridgeGroup.add(deck);
+
+      [-0.64, 0.64].forEach(rz => {
+        const rail = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.22, 0.08), concreteMat);
+        rail.position.set(0, 0.2, rz);
+        bridgeGroup.add(rail);
+      });
+
+      // Rectangular twin bridge piers standing in the river channel with white foam at their base
+      [-1.1, 1.1].forEach(px => {
+        const pierBlock = new THREE.Mesh(new THREE.BoxGeometry(0.42, 2.2, 1.15), concreteMat);
+        pierBlock.position.set(px, -1.1, 0);
+        pierBlock.castShadow = true;
+        bridgeGroup.add(pierBlock);
+      });
+      northGroup.add(bridgeGroup);
+
+      // 6. Mountain Tunnel Portal on Truong Son Trail
+      const tunnelGroup = new THREE.Group();
+      tunnelGroup.position.set(-7.6, 3.65, -1.45);
+      tunnelGroup.rotation.y = 0.42;
+
+      const portalFrame = new THREE.Mesh(new THREE.BoxGeometry(1.35, 1.25, 0.8), concreteMat);
+      portalFrame.castShadow = true;
+      tunnelGroup.add(portalFrame);
+
+      const tunnelHole = new THREE.Mesh(
+        new THREE.BoxGeometry(0.78, 0.85, 0.85),
+        new THREE.MeshBasicMaterial({ color: 0x090807 })
+      );
+      tunnelHole.position.set(0, -0.12, 0.02);
+      tunnelGroup.add(tunnelHole);
+      northGroup.add(tunnelGroup);
+
+      scene.add(northGroup);
+
+      // =========================================================================
+      // B. MIỀN NAM VILLAGES & THATCHED HOUSES (CHUẨN VỊ TRÍ TRÊN BỜ ĐẤT & BÁN ĐẢO)
+      // =========================================================================
+      SOUTHERN_HOUSE_COORDS.slice(0, 9).forEach(([hx, hz, hrot, hscale]) =>
+        createSouthernThatchedHouse(hx, hz, hrot, hscale)
+      );
+
+      // Wooden Rural Bridge spanning cleanly across the Wood Bridge Inlet Channel at (-4.8, 7.2)
+      const woodBridge = new THREE.Group();
+      woodBridge.position.set(-4.8, 0.86, 7.25);
+      woodBridge.rotation.y = 0.56;
+      const plankMat = new THREE.MeshStandardMaterial({ color: 0x78502b, roughness: 0.88 });
+      const wbDeck = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.12, 0.88), plankMat);
+      wbDeck.castShadow = true;
+      woodBridge.add(wbDeck);
+
+      for (let i = -5; i <= 5; i++) {
+        [-0.4, 0.4].forEach(sideZ => {
+          const post = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.38, 0.06), plankMat);
+          post.position.set(i * 0.36, 0.2, sideZ);
+          woodBridge.add(post);
+        });
+      }
+      [-1.25, 0, 1.25].forEach(px => {
+        const pile = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 1.2, 6), plankMat);
+        pile.position.set(px, -0.55, 0);
+        woodBridge.add(pile);
+      });
+      scene.add(woodBridge);
+
+      // =========================================================================
+      // C. ẤP CHIẾN LƯỢC FORTIFIED COMPOUND
+      // =========================================================================
+      const apGroup = new THREE.Group();
+      const fenceWoodMat = new THREE.MeshStandardMaterial({ color: 0x4a3520, roughness: 0.9 });
+      const wireMat = new THREE.MeshStandardMaterial({ color: 0x52525b, metalness: 0.6, roughness: 0.4 });
+
+      function buildFenceLine(x1, z1, x2, z2, postsCount) {
+        for (let i = 0; i <= postsCount; i++) {
+          const t = i / postsCount;
+          const fx = THREE.MathUtils.lerp(x1, x2, t);
+          const fz = THREE.MathUtils.lerp(z1, z2, t);
+          const fy = getTerrainHeight(fx, fz);
+          const post = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 0.65, 5), fenceWoodMat);
+          post.position.set(fx, fy + 0.3, fz);
+          post.castShadow = true;
+          apGroup.add(post);
+        }
+        const len = Math.hypot(x2 - x1, z2 - z1);
+        const midX = (x1 + x2) / 2;
+        const midZ = (z1 + z2) / 2;
+        const midY = getTerrainHeight(midX, midZ);
+        const angle = Math.atan2(x2 - x1, z2 - z1);
+        [0.22, 0.45].forEach(ry => {
+          const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, len, 4), wireMat);
+          rail.rotation.z = Math.PI / 2;
+          rail.rotation.y = angle - Math.PI / 2;
+          rail.position.set(midX, midY + ry, midZ);
+          apGroup.add(rail);
+        });
+      }
+
+      buildFenceLine(5.8, 3.2, 13.8, 6.2, 16);
+      buildFenceLine(5.8, 3.2, 9.2, -1.2, 12);
+      buildFenceLine(13.8, 6.2, 16.5, 1.8, 10);
+
+      function createWatchtower(tx, tz) {
+        const ty = getTerrainHeight(tx, tz);
+        const tower = new THREE.Group();
+        tower.position.set(tx, ty, tz);
+
+        [[-0.25, -0.25], [0.25, -0.25], [-0.25, 0.25], [0.25, 0.25]].forEach(([lx, lz]) => {
+          const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 1.55, 6), fenceWoodMat);
+          leg.position.set(lx, 0.75, lz);
+          leg.castShadow = true;
+          tower.add(leg);
+        });
+
+        const platform = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.12, 0.72), fenceWoodMat);
+        platform.position.y = 1.42;
+        tower.add(platform);
+
+        const roof = new THREE.Mesh(
+          new THREE.ConeGeometry(0.62, 0.45, 4),
+          new THREE.MeshStandardMaterial({ color: 0x713f12, roughness: 0.9 })
+        );
+        roof.position.y = 1.98;
+        roof.rotation.y = Math.PI / 4;
+        roof.castShadow = true;
+        tower.add(roof);
+
+        apGroup.add(tower);
+      }
+
+      createWatchtower(6.1, 3.0);
+      createWatchtower(11.6, 5.1);
+      createWatchtower(14.0, 5.9);
+      createWatchtower(16.2, 2.2);
+
+      createSouthernThatchedHouse(7.8, 2.2, -0.4, 0.95);
+      createSouthernThatchedHouse(11.2, 3.2, -0.35, 0.92);
+
+      scene.add(apGroup);
+
+      // =========================================================================
+      // D. NATIONAL FLAGS (CỜ ĐỎ SAO VÀNG TẠI MIỀN BẮC & MIỀN NAM)
+      // =========================================================================
+      createVietnamFlag(-9.6, getTerrainHeight(-9.6, -4.2), -4.2, 3.2, 1.15);
+      createVietnamFlag(4.6, getTerrainHeight(4.6, 4.2), 4.2, 2.5, 0.95);
+    }
+
+    // ============================================================================
+    // 10. MILITARY TRUCKS, SAMPAN BOATS WITH ROWERS, CIVILIANS & SOLDIERS
+    // ============================================================================
+    function createHumanFigure({
+      role = 'civilian',
+      shirtColor = 0x3b2f2f,
+      hatType = 'nonla'
+    } = {}) {
+      const person = new THREE.Group();
+
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69, roughness: 0.7 });
+      const shirtMat = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.85 });
+      const pantsMat = new THREE.MeshStandardMaterial({
+        color: role === 'soldier' ? 0x2d3a1e : 0x1c1917,
+        roughness: 0.85
+      });
+      const hatMat = new THREE.MeshStandardMaterial({
+        color: hatType === 'nonla' ? 0xe5cca0 : 0x3f4f26,
+        roughness: 0.8,
+        side: THREE.DoubleSide
+      });
+
+      [-0.024, 0.024].forEach(lx => {
+        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.013, 0.13, 5), pantsMat);
+        leg.position.set(lx, 0.065, 0);
+        person.add(leg);
+      });
+
+      const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.028, 0.13, 6), shirtMat);
+      torso.position.y = 0.185;
+      torso.castShadow = true;
+      person.add(torso);
+
+      [-0.042, 0.042].forEach((ax, idx) => {
+        const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.01, 0.11, 5), shirtMat);
+        arm.position.set(ax, 0.18, 0.01);
+        arm.rotation.z = idx === 0 ? 0.25 : -0.25;
+        person.add(arm);
+      });
+
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.028, 6, 6), skinMat);
+      head.position.y = 0.275;
+      person.add(head);
+
+      if (hatType === 'nonla') {
+        const nonLa = new THREE.Mesh(new THREE.ConeGeometry(0.072, 0.048, 10), hatMat);
+        nonLa.position.y = 0.305;
+        nonLa.castShadow = true;
+        person.add(nonLa);
+      } else {
+        const muCoi = new THREE.Mesh(new THREE.SphereGeometry(0.036, 8, 6, 0, Math.PI * 2, 0, Math.PI * 0.6), hatMat);
+        muCoi.position.y = 0.285;
+        person.add(muCoi);
+      }
+
+      return person;
+    }
+
+    function createMilitaryTruckMesh() {
+      const truck = new THREE.Group();
+      const oliveMat = new THREE.MeshStandardMaterial({ color: 0x3f4d28, roughness: 0.7 });
+      const canvasMat = new THREE.MeshStandardMaterial({ color: 0x4d5d33, roughness: 0.85 });
+      const wheelMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.9 });
+      const rimMat = new THREE.MeshStandardMaterial({ color: 0x71717a, metalness: 0.6 });
+      const headlightMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+
+      const cab = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.28, 0.34), oliveMat);
+      cab.position.set(0.24, 0.22, 0);
+      cab.castShadow = true;
+      truck.add(cab);
+
+      const bed = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.36, 0.36), canvasMat);
+      bed.position.set(-0.22, 0.27, 0);
+      bed.castShadow = true;
+      truck.add(bed);
+
+      const wheels = [];
+      [[-0.36, -0.18], [-0.36, 0.18], [0.24, -0.18], [0.24, 0.18]].forEach(([wx, wz]) => {
+        const wGroup = new THREE.Group();
+        wGroup.position.set(wx, 0.09, wz);
+        const w = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.07, 8), wheelMat);
+        w.rotation.x = Math.PI / 2;
+        wGroup.add(w);
+        const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.03, 0.08), rimMat);
+        wGroup.add(spoke);
+        truck.add(wGroup);
+        wheels.push(wGroup);
+      });
+      truck.userData.wheels = wheels;
+
+      [-0.11, 0.11].forEach(hz => {
+        const hl = new THREE.Mesh(new THREE.SphereGeometry(0.032, 6, 6), headlightMat);
+        hl.position.set(0.43, 0.19, hz);
+        truck.add(hl);
+      });
+
+      return truck;
+    }
+
+    function createBoatWakeMesh(scale = 1.0) {
+      const wakeGroup = new THREE.Group();
+      const wakeMat = new THREE.MeshBasicMaterial({
+        color: 0xf0f9ff,
+        transparent: true,
+        opacity: 0.78,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+
+      [-1, 1].forEach(side => {
+        const armGeo = new THREE.PlaneGeometry(2.15 * scale, 0.16 * scale);
+        armGeo.rotateX(-Math.PI / 2);
+        const arm = new THREE.Mesh(armGeo, wakeMat);
+        arm.position.set(-0.35 * scale, -0.01, side * 0.38 * scale);
+        arm.rotation.y = side * 0.25;
+        wakeGroup.add(arm);
+      });
+
+      const sternGeo = new THREE.PlaneGeometry(1.75 * scale, 0.28 * scale);
+      sternGeo.rotateX(-Math.PI / 2);
+      const sternFoam = new THREE.Mesh(sternGeo, wakeMat);
+      sternFoam.position.set(-1.20 * scale, -0.01, 0);
+      wakeGroup.add(sternFoam);
+
+      return wakeGroup;
+    }
+
+    // ============================================================================
+    // ARMED NAVAL GUNBOAT / WARSHIP ("TÀU CHIẾN / TÀU KHÔNG SỐ VŨ TRANG")
+    // Features armored bow, command bridge, radar mast, front & aft rotating
+    // naval cannon turrets with periodic muzzle flash, sailors & Vietnam Flag!
+    // ============================================================================
+    function createNavalWarship(x, z, rotY, scale = 1.0, isFlagship = true) {
+      const WATER_SURFACE = WATER_LEVEL + 0.02;
+      const ship = new THREE.Group();
+      ship.position.set(x, WATER_SURFACE, z);
+      ship.rotation.y = rotY;
+      ship.scale.setScalar(scale);
+
+      // Authentic dark-mahogany & olive-armored gunboat hull matching reference diorama
+      const lowerHullMat = new THREE.MeshStandardMaterial({ color: 0x2d1a0e, roughness: 0.65, metalness: 0.25 });
+      const armorBandMat = new THREE.MeshStandardMaterial({ color: 0x3f3222, roughness: 0.55, metalness: 0.35 });
+      const deckMat = new THREE.MeshStandardMaterial({ color: 0x6b4628, roughness: 0.78 });
+      const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x4b5338, roughness: 0.6, metalness: 0.3 });
+      const gunMetalMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.35, metalness: 0.75 });
+      const sandbagMat = new THREE.MeshStandardMaterial({ color: 0xa68a64, roughness: 0.9 });
+      const winGlowMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+
+      // 1. Whitewater V-Wake & Churning Stern Foam
+      const wake = createBoatWakeMesh(isFlagship ? 1.32 : 1.05);
+      ship.add(wake);
+
+      // 2. Sleek Tapered Warship Hull with Raised Pointed Bow & Armored Bulwarks
+      const hullLen = 2.75;
+      const hullGeo = new THREE.BoxGeometry(hullLen, 0.36, 0.80, 10, 2, 2);
+      const hPos = hullGeo.attributes.position;
+      for (let i = 0; i < hPos.count; i++) {
+        const bx = hPos.getX(i);
+        const by = hPos.getY(i);
+        const bz = hPos.getZ(i);
+        // Sharp pointed bow at +X, tapered stern at -X
+        const normX = bx / (hullLen * 0.5);
+        let widthFactor = 1.0;
+        if (normX > 0.15) {
+          widthFactor = Math.max(0.06, 1.0 - Math.pow((normX - 0.15) / 0.85, 1.45));
+        } else if (normX < -0.35) {
+          widthFactor = Math.max(0.38, 1.0 - Math.pow((-normX - 0.35) / 0.65, 1.6) * 0.62);
+        }
+        hPos.setZ(i, bz * widthFactor);
+        // Sheer line: raised bow & raised stern
+        if (normX > 0.35) {
+          hPos.setY(i, by + Math.pow(normX - 0.35, 1.5) * 0.28);
+        } else if (normX < -0.5) {
+          hPos.setY(i, by + Math.pow(-normX - 0.5, 1.5) * 0.12);
+        }
+        // V-shaped keel bottom
+        if (by < 0) {
+          hPos.setZ(i, hPos.getZ(i) * 0.72);
+        }
+      }
+      hullGeo.computeVertexNormals();
+      const hull = new THREE.Mesh(hullGeo, lowerHullMat);
+      hull.position.y = 0.12;
+      hull.castShadow = true;
+      ship.add(hull);
+
+      // Armored gunwale rub-rail strip
+      const deck = new THREE.Mesh(new THREE.BoxGeometry(2.15, 0.06, 0.64), deckMat);
+      deck.position.y = 0.28;
+      ship.add(deck);
+
+      // 3. Armored Command Bridge / Wheelhouse Superstructure
+      const bridgeGroup = new THREE.Group();
+      bridgeGroup.position.set(-0.22, 0.46, 0);
+
+      const lowerCabin = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.32, 0.52), armorBandMat);
+      lowerCabin.castShadow = true;
+      bridgeGroup.add(lowerCabin);
+
+      const upperPilotHouse = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.24, 0.44), bridgeMat);
+      upperPilotHouse.position.set(0.08, 0.26, 0);
+      upperPilotHouse.castShadow = true;
+      bridgeGroup.add(upperPilotHouse);
+
+      // Illuminated Bridge Windows
+      const frontWin = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.10), winGlowMat);
+      frontWin.rotation.y = Math.PI / 2;
+      frontWin.position.set(0.355, 0.27, 0);
+      bridgeGroup.add(frontWin);
+
+      // Rotating Naval Radar Mast on top of Bridge
+      const mastPole = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.022, 0.48, 6), gunMetalMat);
+      mastPole.position.set(0.05, 0.58, 0);
+      bridgeGroup.add(mastPole);
+
+      const radarDish = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.07, 0.28), new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.8 }));
+      radarDish.position.set(0.05, 0.82, 0);
+      bridgeGroup.add(radarDish);
+
+      // Glowing masthead signal lamp
+      const signalLamp = new THREE.Mesh(new THREE.SphereGeometry(0.038, 6, 6), winGlowMat);
+      signalLamp.position.set(0.05, 0.88, 0);
+      bridgeGroup.add(signalLamp);
+
+      ship.add(bridgeGroup);
+
+      // 4. FRONT & AFT ROTATING NAVAL GUN TURRETS (Pháo hạm mũi tàu 37mm & súng máy phòng không 12.7mm đuôi tàu)
+      function createNavalGunTurret(gx, gy, isMainCannon) {
+        const turret = new THREE.Group();
+        turret.position.set(gx, gy, 0);
+
+        const basePedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.17, 0.12, 8), gunMetalMat);
+        turret.add(basePedestal);
+
+        // Armored gun shield & turret dome
+        const cupola = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.16, 0.22), bridgeMat);
+        cupola.position.y = 0.12;
+        cupola.castShadow = true;
+        turret.add(cupola);
+
+        // Twin Gun Barrels
+        const barrelLen = isMainCannon ? 0.46 : 0.34;
+        [-0.04, 0.04].forEach(bz => {
+          const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.022, barrelLen, 6), gunMetalMat);
+          barrel.rotation.z = Math.PI / 2;
+          barrel.position.set(barrelLen * 0.5 + 0.06, 0.14, bz);
+           barrel.rotation.z = Math.PI / 2 - 0.18;
+          turret.add(barrel);
+        });
+
+        // Naval Cannon Muzzle Flash
+        const flashMat = new THREE.MeshBasicMaterial({
+          color: 0xfef08a,
+          transparent: true,
+          opacity: 0.0,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+        const flashMesh = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.24, 6), flashMat);
+        flashMesh.rotation.z = -Math.PI / 2 + 0.18;
+        flashMesh.position.set(barrelLen + 0.16, 0.20, 0);
+        turret.add(flashMesh);
+
+        return { turret, flashMat, flashMesh };
+      }
+
+      const bowTurret = createNavalGunTurret(0.72, 0.34, true);
+      ship.add(bowTurret.turret);
+
+      const sternTurret = createNavalGunTurret(-0.88, 0.34, false);
+      sternTurret.turret.rotation.y = Math.PI;
+      ship.add(sternTurret.turret);
+
+      // Sandbagged breastwork & ammo crates on mid-deck
+      for (let i = 0; i < 3; i++) {
+        const bag = new THREE.Mesh(new THREE.SphereGeometry(0.065, 6, 5), sandbagMat);
+        bag.scale.set(1.3, 0.65, 0.9);
+        bag.position.set(0.38, 0.33, (i - 1) * 0.14);
+        ship.add(bag);
+      }
+
+      // 5. Naval Sailors & Liberation Gunners on Deck
+      const bowGunner = createHumanFigure({ role: 'soldier', shirtColor: 0x2d3a1e, hatType: 'mucoi' });
+      bowGunner.position.set(0.48, 0.28, 0);
+      bowGunner.rotation.y = Math.PI / 2;
+      ship.add(bowGunner);
+
+      const sternGunner = createHumanFigure({ role: 'soldier', shirtColor: 0x1e293b, hatType: 'mucoi' });
+      sternGunner.position.set(-0.68, 0.28, 0);
+      sternGunner.rotation.y = -Math.PI / 2;
+      ship.add(sternGunner);
+
+      // 6. Prominent Waving Vietnam National Flag (Cờ Đỏ Sao Vàng) attached directly to the Warship
+      const flagPoleH = 1.05;
+      const flagHolder = new THREE.Group();
+      flagHolder.position.set(-0.08, 0.58, 0);
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.022, 0.028, flagPoleH, 6),
+        new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.8 })
+      );
+      pole.position.y = flagPoleH * 0.5;
+      flagHolder.add(pole);
+
+      // Reuse shared animated flag shader material
+      if (flagMaterials.length > 0) {
+        const fw = 0.72, fh = 0.48;
+        const flagGeo = new THREE.PlaneGeometry(fw, fh, 10, 5);
+        flagGeo.translate(fw / 2, 0, 0);
+        const flagMesh = new THREE.Mesh(flagGeo, flagMaterials[0]);
+        flagMesh.position.set(0.02, flagPoleH - fh * 0.55, 0);
+        flagHolder.add(flagMesh);
+      }
+      ship.add(flagHolder);
+
+      scene.add(ship);
+
+      riverBoats.push({
+        mesh: ship,
+        wake,
+        oar: null,
+        radarDish,
+        bowTurret,
+        sternTurret,
+        baseX: x,
+        baseZ: z,
+        baseY: WATER_SURFACE,
+        baseRotY: rotY,
+        cruiseRadius: isFlagship ? 0.38 : 0.24,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    function createSampanBoat(x, z, rotY, scale = 1.0, withFlag = true) {
+      const WATER_SURFACE = 0.45;
+      const boat = new THREE.Group();
+      boat.position.set(x, WATER_SURFACE, z);
+      boat.rotation.y = rotY;
+      boat.scale.setScalar(scale);
+
+      const hullMat = new THREE.MeshStandardMaterial({ color: 0x452712, roughness: 0.8 });
+      const plankMat = new THREE.MeshStandardMaterial({ color: 0x6e4726, roughness: 0.85 });
+      const cabinMat = new THREE.MeshStandardMaterial({ color: 0x8c673a, roughness: 0.9 });
+      const sackMat = new THREE.MeshStandardMaterial({ color: 0xb59b6d, roughness: 0.9 });
+
+      const wake = createBoatWakeMesh(0.95);
+      boat.add(wake);
+
+      const hullGeo = new THREE.BoxGeometry(2.15, 0.24, 0.58, 6, 1, 1);
+      const hPos = hullGeo.attributes.position;
+      for (let i = 0; i < hPos.count; i++) {
+        const bx = hPos.getX(i);
+        const factor = 1.0 - Math.pow(Math.abs(bx) / 1.1, 1.8) * 0.82;
+        hPos.setZ(i, hPos.getZ(i) * factor);
+        if (Math.abs(bx) > 0.8) hPos.setY(i, hPos.getY(i) + 0.08);
+      }
+      hullGeo.computeVertexNormals();
+      const hull = new THREE.Mesh(hullGeo, hullMat);
+      hull.castShadow = true;
+      boat.add(hull);
+
+      [-0.55, 0.35, 0.65].forEach(px => {
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.38), plankMat);
+        seat.position.set(px, 0.11, 0);
+        boat.add(seat);
+      });
+
+      const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.26, 0.72, 8, 1, false, 0, Math.PI), cabinMat);
+      roof.rotation.z = Math.PI / 2;
+      roof.position.set(-0.1, 0.12, 0);
+      boat.add(roof);
+
+      for (let s = 0; s < 3; s++) {
+        const sack = new THREE.Mesh(new THREE.SphereGeometry(0.085, 6, 5), sackMat);
+        sack.scale.set(1.3, 0.75, 0.9);
+        sack.position.set(0.22 + s * 0.13, 0.14, (s % 2 === 0 ? 1 : -1) * 0.05);
+        boat.add(sack);
+      }
+
+      const rower = createHumanFigure({ role: 'civilian', shirtColor: 0x292524, hatType: 'nonla' });
+      rower.position.set(-0.68, 0.08, 0);
+      rower.rotation.y = Math.PI / 2;
+      boat.add(rower);
+
+      const oar = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.018, 0.95, 5), plankMat);
+      oar.position.set(-0.62, 0.16, 0.26);
+      oar.rotation.x = 0.85;
+      oar.rotation.z = -0.3;
+      boat.add(oar);
+
+      const passenger = createHumanFigure({ role: 'civilian', shirtColor: 0x4a3b2c, hatType: 'nonla' });
+      passenger.position.set(0.52, 0.06, 0);
+      passenger.rotation.y = Math.PI / 2;
+      boat.add(passenger);
+
+      const lantern = new THREE.Mesh(
+        new THREE.SphereGeometry(0.042, 6, 6),
+        new THREE.MeshBasicMaterial({ color: 0xfbbf24 })
+      );
+      lantern.position.set(0.75, 0.22, 0);
+      boat.add(lantern);
+
+      scene.add(boat);
+      if (withFlag) {
+        createVietnamFlag(x, WATER_SURFACE + 0.16, z, 0.95 * scale, 0.48 * scale);
+      }
+      riverBoats.push({
+        mesh: boat,
+        wake,
+        oar,
+        baseX: x,
+        baseZ: z,
+        baseY: WATER_SURFACE,
+        baseRotY: rotY,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    function createArmedSoldierWithMuzzleFlash(x, z, targetX, targetZ, isGuerrilla = false) {
+      const y = getTerrainHeight(x, z);
+      const fig = createHumanFigure({
+        role: isGuerrilla ? 'civilian' : 'soldier',
+        shirtColor: isGuerrilla ? 0x262626 : 0x364820,
+        hatType: isGuerrilla ? 'nonla' : 'mucoi'
+      });
+      fig.position.set(x, y, z);
+      const yaw = Math.atan2(targetX - x, targetZ - z);
+      fig.rotation.y = yaw;
+
+      const gunMetalMat = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.7, roughness: 0.3 });
+      const gunStockMat = new THREE.MeshStandardMaterial({ color: 0x6b3e26, roughness: 0.8 });
+      const rifleGroup = new THREE.Group();
+      rifleGroup.position.set(0.032, 0.21, 0.04);
+
+      const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.026, 0.14), gunMetalMat);
+      rifleGroup.add(receiver);
+
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.14, 5), gunMetalMat);
+      barrel.rotation.x = Math.PI / 2;
+      barrel.position.set(0, 0.006, 0.11);
+      rifleGroup.add(barrel);
+
+      const stock = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.032, 0.07), gunStockMat);
+      stock.position.set(0, -0.006, -0.08);
+      rifleGroup.add(stock);
+
+      const flashMat = new THREE.MeshBasicMaterial({
+        color: 0xfef08a,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      const flashGroup = new THREE.Group();
+      flashGroup.position.set(0, 0.006, 0.21);
+
+      const coreSpark = new THREE.Mesh(new THREE.OctahedronGeometry(0.055, 0), flashMat);
+      coreSpark.scale.set(0.8, 0.8, 2.2);
+      flashGroup.add(coreSpark);
+
+      const outerFlame = new THREE.Mesh(
+        new THREE.ConeGeometry(0.048, 0.16, 6),
+        new THREE.MeshBasicMaterial({
+          color: 0xf97316,
+          transparent: true,
+          opacity: 0.0,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        })
+      );
+      outerFlame.rotation.x = Math.PI / 2;
+      outerFlame.position.z = 0.06;
+      flashGroup.add(outerFlame);
+
+      rifleGroup.add(flashGroup);
+      fig.add(rifleGroup);
+      scene.add(fig);
+
+      const muzzleWorldStart = new THREE.Vector3(
+        x + Math.sin(yaw) * 0.24,
+        y + 0.22,
+        z + Math.cos(yaw) * 0.24
+      );
+      const targetWorldPos = new THREE.Vector3(
+        targetX,
+        getTerrainHeight(targetX, targetZ) + 0.28,
+        targetZ
+      );
+
+      combatGunners.push({
+        fig,
+        coreMat: flashMat,
+        outerMat: outerFlame.material,
+        flashGroup,
+        startPos: muzzleWorldStart,
+        targetPos: targetWorldPos,
+        fireRate: 2.2 + Math.random() * 2.5,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    function createSandbagBarricade(x, z, rotY) {
+      const y = getTerrainHeight(x, z);
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+      group.rotation.y = rotY;
+      const bagMat = new THREE.MeshStandardMaterial({ color: 0x9c8259, roughness: 0.92 });
+
+      for (let row = 0; row < 2; row++) {
+        const count = 4 - row;
+        for (let i = 0; i < count; i++) {
+          const bag = new THREE.Mesh(new THREE.SphereGeometry(0.075, 6, 5), bagMat);
+          bag.scale.set(1.45, 0.65, 0.85);
+          bag.position.set((i - (count - 1) / 2) * 0.16, 0.045 + row * 0.075, 0);
+          bag.castShadow = true;
+          group.add(bag);
+        }
+      }
+      scene.add(group);
+    }
+
+    function createHelicopterOnRod(x, z, rodHeight, rotY) {
+      const y = getTerrainHeight(x, z);
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+
+      const rod = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.06, rodHeight, 8),
+        new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.8 })
+      );
+      rod.position.y = rodHeight / 2;
+      group.add(rod);
+
+      const heli = new THREE.Group();
+      heli.position.y = rodHeight;
+      heli.rotation.y = rotY;
+      heli.rotation.z = -0.12;
+      heli.rotation.x = 0.08;
+
+      const heliMat = new THREE.MeshStandardMaterial({ color: 0x2f3b22, roughness: 0.55, metalness: 0.3 });
+      const glassMat = new THREE.MeshStandardMaterial({ color: 0x93c5fd, roughness: 0.15, metalness: 0.8 });
+
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.52, 0.56), heliMat);
+      body.castShadow = true;
+      heli.add(body);
+
+      const nose = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 10), glassMat);
+      nose.position.set(0.68, -0.02, 0);
+      nose.scale.set(1.2, 0.82, 0.88);
+      heli.add(nose);
+
+      const tail = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.16, 0.14), heliMat);
+      tail.position.set(-1.3, 0.08, 0);
+      heli.add(tail);
+
+      const fin = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.45, 0.06), heliMat);
+      fin.position.set(-1.95, 0.25, 0);
+      fin.rotation.z = -0.25;
+      heli.add(fin);
+
+      [-0.24, 0.24].forEach(sz => {
+        const skid = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 1.35, 6), heliMat);
+        skid.rotation.z = Math.PI / 2;
+        skid.position.set(0.05, -0.38, sz);
+        heli.add(skid);
+      });
+
+      const mainRotor = new THREE.Mesh(
+        new THREE.BoxGeometry(3.4, 0.025, 0.16),
+        new THREE.MeshStandardMaterial({ color: 0x18181b })
+      );
+      mainRotor.position.set(0, 0.34, 0);
+      heli.add(mainRotor);
+      helicopterRotors.push(mainRotor);
+
+      const crossRotor = new THREE.Mesh(
+        new THREE.BoxGeometry(0.16, 0.025, 3.4),
+        new THREE.MeshStandardMaterial({ color: 0x18181b })
+      );
+      crossRotor.position.set(0, 0.34, 0);
+      mainRotor.add(crossRotor);
+
+      // Spinning Tail Rotor on vertical fin
+      const tailRotor = new THREE.Mesh(
+        new THREE.BoxGeometry(0.55, 0.08, 0.02),
+        new THREE.MeshStandardMaterial({ color: 0x18181b })
+      );
+      tailRotor.position.set(-2.02, 0.32, 0.06);
+      heli.add(tailRotor);
+      helicopterTailRotors.push(tailRotor);
+
+      // Sweeping Volumetric Searchlight Beam under Helicopter
+      const beamGeo = new THREE.ConeGeometry(1.35, 5.2, 16, 1, true);
+      beamGeo.translate(0, -2.6, 0);
+      const beamMat = new THREE.MeshBasicMaterial({
+        color: 0xfef08a,
+        transparent: true,
+        opacity: 0.14,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      const beamMesh = new THREE.Mesh(beamGeo, beamMat);
+      beamMesh.position.set(0.55, -0.25, 0);
+      heli.add(beamMesh);
+      helicopterSearchlights.push({ mesh: beamMesh, heli, baseY: rodHeight, phase: Math.random() * Math.PI * 2 });
+
+      group.add(heli);
+      scene.add(group);
+    }
+
+    function createTankMesh(x, z, rotY) {
+      const y = getTerrainHeight(x, z);
+      const tank = new THREE.Group();
+      tank.position.set(x, y, z);
+      tank.rotation.y = rotY;
+
+      const armorMat = new THREE.MeshStandardMaterial({ color: 0x364424, roughness: 0.65, metalness: 0.35 });
+      const trackMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.9 });
+
+      const hull = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.28, 0.62), armorMat);
+      hull.position.y = 0.2;
+      hull.castShadow = true;
+      tank.add(hull);
+
+      [-0.31, 0.31].forEach(tz => {
+        const track = new THREE.Mesh(new THREE.BoxGeometry(1.12, 0.2, 0.14), trackMat);
+        track.position.set(0, 0.11, tz);
+        tank.add(track);
+      });
+
+      const turretGroup = new THREE.Group();
+      turretGroup.position.set(-0.05, 0.42, 0);
+
+      const turret = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 0.22, 10), armorMat);
+      turretGroup.add(turret);
+
+      const barrelGroup = new THREE.Group();
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.038, 0.85, 8), armorMat);
+      barrel.rotation.z = Math.PI / 2;
+      barrel.position.set(0.47, 0.02, 0);
+      barrelGroup.add(barrel);
+
+      // Tank Cannon Muzzle Blast Flash
+      const blastMat = new THREE.MeshBasicMaterial({
+        color: 0xf97316,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      const blastMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18, 1), blastMat);
+      blastMesh.position.set(0.95, 0.02, 0);
+      barrelGroup.add(blastMesh);
+
+      turretGroup.add(barrelGroup);
+      tank.add(turretGroup);
+      scene.add(tank);
+
+      animatedTanks.push({
+        turretGroup,
+        barrelGroup,
+        blastMat,
+        blastMesh,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    function buildVehiclesBoatsAndBattlefield() {
+      // 1. Animated Convoy of 14 Military Supply Trucks along Đường Trường Sơn
+      for (let i = 0; i < 14; i++) {
+        const mesh = createMilitaryTruckMesh();
+        scene.add(mesh);
+        truongSonTrucks.push({ mesh, t: i / 14 });
+      }
+
+      // Secondary Convoy of 4 Trucks driving across the Concrete Highway Bridge & Curved River Road
+      const bridgeRoute = [
+        [-14.5, -0.2], [-12.2, 1.4], [-10.8, 2.75], [-8.2, 3.2], [-7.2, 4.8], [-5.2, 5.6], [-2.2, 6.2]
+      ];
+      for (let i = 0; i < 4; i++) {
+        const mesh = createMilitaryTruckMesh();
+        scene.add(mesh);
+        truongSonTrucks.push({
+          mesh,
+          t: i / 4,
+          customRoute: bridgeRoute
+        });
+      }
+
+      // 2. 4 ICONIC ARMED NAVAL WARSHIPS ("TÀU CHIẾN / TÀU KHÔNG SỐ") MATCHING REFERENCE PHOTO
+      // Warship 1: Emerging from Concrete Bridge into Left Cove
+      createNavalWarship(-11.4, 4.5, -0.42, 0.98, false);
+      // Warship 2: Cruising around the Left-Center River Bend
+      createNavalWarship(-8.6, 5.9, -0.55, 1.04, true);
+      // Warship 3: Large Flagship Warship right in front of the Wooden Rural Bridge
+      createNavalWarship(-5.1, 8.9, -0.34, 1.15, true);
+      // Warship 4: Large Foreground Warship cruising past the Coconut-Palm Island on the right
+      createNavalWarship(2.6, 10.4, -0.16, 1.12, true);
+
+      // 4 Tactical Patrol Boats / Armed Sampans along the Diagonal Tributary Canal
+      createNavalWarship(-4.5, 2.6, -0.42, 0.76, false);
+      createSampanBoat(-0.2, 0.7, -0.42, 0.88, true);
+      createNavalWarship(4.2, -1.2, -0.38, 0.78, false);
+      createSampanBoat(8.6, -2.9, -0.35, 0.86, true);
+
+      // Wooden Boat Jetty / Dock on Southern Riverbank
+      const jetty = new THREE.Group();
+      jetty.position.set(-1.8, 0.56, 7.65);
+      jetty.rotation.y = 0.25;
+      const jettyMat = new THREE.MeshStandardMaterial({ color: 0x6e4726, roughness: 0.88 });
+      const jDeck = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.08, 1.45), jettyMat);
+      jDeck.castShadow = true;
+      jetty.add(jDeck);
+      [[-0.26, -0.55], [0.26, -0.55], [-0.26, 0.55], [0.26, 0.55]].forEach(([px, pz]) => {
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.045, 0.65, 6), jettyMat);
+        post.position.set(px, -0.15, pz);
+        jetty.add(post);
+      });
+      scene.add(jetty);
+
+      // 3. Two UH-1 Huey Helicopters mounted on tall display rods above Ấp Chiến Lược
+      createHelicopterOnRod(6.8, -0.8, 5.6, -0.35);
+      createHelicopterOnRod(11.4, -0.6, 5.2, -0.45);
+
+      // 4. Tanks in Ấp Chiến Lược & Southern Approach
+      createTankMesh(9.8, 0.8, -0.45);
+      createTankMesh(12.2, 1.5, -0.65);
+      createTankMesh(-0.8, 4.9, 0.28);
+      createTankMesh(3.4, 2.2, 0.22);
+
+      // 4b. Sandbag Barricades & Active Gunfire Skirmish Lines
+      const sandbagPositions = [
+        [5.4, 2.2, 0.4], [6.8, 1.1, 0.3], [8.2, 2.8, -0.5], [10.4, 2.6, -0.4], [12.6, 3.4, -0.6]
+      ];
+      sandbagPositions.forEach(([sx, sz, srot]) => createSandbagBarricade(sx, sz, srot));
+
+      const liberationGunners = [
+        [5.2, 2.4, 9.8, 0.8, true],
+        [5.7, 1.9, 9.8, 0.8, false],
+        [6.4, 1.2, 11.2, 2.0, false],
+        [7.1, 0.5, 11.6, 0.2, false],
+        [7.6, 3.6, 11.2, 3.2, true],
+        [8.5, 4.2, 12.2, 1.5, true],
+        [9.2, 4.6, 12.2, 1.5, false],
+        [6.2, 4.4, 10.5, 2.5, true],
+        [4.9, 0.4, 9.8, 0.8, false],
+        [8.0, -1.2, 11.6, 0.2, false]
+      ];
+      liberationGunners.forEach(([gx, gz, tx, tz, isG]) =>
+        createArmedSoldierWithMuzzleFlash(gx, gz, tx, tz, isG)
+      );
+
+      const compoundDefenders = [
+        [9.4, 1.5, 5.7, 1.9, false],
+        [10.6, 2.4, 6.4, 1.2, false],
+        [11.8, 2.9, 8.5, 4.2, false],
+        [12.8, 3.2, 9.2, 4.6, false],
+        [10.2, 0.2, 7.1, 0.5, false],
+        [13.2, 2.2, 8.0, -1.2, false]
+      ];
+      compoundDefenders.forEach(([gx, gz, tx, tz, isG]) =>
+        createArmedSoldierWithMuzzleFlash(gx, gz, tx, tz, isG)
+      );
+
+      const tracerGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.48, 4);
+      tracerGeo.rotateX(Math.PI / 2);
+      combatGunners.forEach((gunner, idx) => {
+        const isFriendly = idx < liberationGunners.length;
+        const tracerMat = new THREE.MeshBasicMaterial({
+          color: isFriendly ? 0xfef08a : 0xf97316,
+          blending: THREE.AdditiveBlending
+        });
+        const tracerMesh = new THREE.Mesh(tracerGeo, tracerMat);
+        tracerMesh.lookAt(gunner.targetPos);
+        scene.add(tracerMesh);
+        tracerBullets.push({
+          mesh: tracerMesh,
+          start: gunner.startPos.clone(),
+          end: gunner.targetPos.clone(),
+          progress: Math.random(),
+          speed: 2.2 + Math.random() * 1.4,
+          gunner
+        });
+      });
+
+      // 5. LIVELY VIETNAMESE CIVILIANS & LIBERATION SOLDIERS
+      const peopleGroup = new THREE.Group();
+      const civilianColors = [0x292524, 0x44403c, 0x5c4033, 0x78350f, 0x1e3a8a, 0xd97706];
+
+      for (let i = 0; i < 24; i++) {
+        const pathIdx = i % VILLAGE_TRAIL_SEGMENTS.length;
+        const civ = createHumanFigure({
+          role: 'civilian',
+          shirtColor: civilianColors[i % civilianColors.length],
+          hatType: 'nonla'
+        });
+
+        if (i % 3 === 0) {
+          const poleMat = new THREE.MeshStandardMaterial({ color: 0x855834, roughness: 0.8 });
+          const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.34, 5), poleMat);
+          pole.rotation.z = Math.PI / 2;
+          pole.position.set(0, 0.23, 0.02);
+          civ.add(pole);
+          [-0.15, 0.15].forEach(bx => {
+            const basket = new THREE.Mesh(new THREE.SphereGeometry(0.038, 6, 5), poleMat);
+            basket.position.set(bx, 0.14, 0.02);
+            civ.add(basket);
+          });
+        }
+
+        peopleGroup.add(civ);
+        animatedPeople.push({
+          mesh: civ,
+          type: 'village_walker',
+          path: VILLAGE_TRAIL_SEGMENTS[pathIdx],
+          progress: (i / 24 + Math.random() * 0.2) % 1.0,
+          speed: 0.035 + Math.random() * 0.02,
+          dir: i % 2 === 0 ? 1 : -1,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      // Civilians crossing the Wooden Rural Bridge at (-4.8, 7.25)
+      for (let i = 0; i < 5; i++) {
+        const civ = createHumanFigure({
+          role: 'civilian',
+          shirtColor: civilianColors[(i + 2) % civilianColors.length],
+          hatType: 'nonla'
+        });
+        const offset = (i - 2) * 0.62;
+        const bx = -4.8 + Math.cos(0.56) * offset;
+        const bz = 7.25 - Math.sin(0.56) * offset;
+        civ.position.set(bx, 0.92, bz);
+        civ.rotation.y = 0.56 + (i % 2 === 0 ? 0 : Math.PI);
+        peopleGroup.add(civ);
+      }
+
+      // Liberation Soldiers marching along Đường Mòn Trường Sơn
+      for (let i = 0; i < 22; i++) {
+        const sol = createHumanFigure({
+          role: 'soldier',
+          shirtColor: 0x3b4d24,
+          hatType: 'mucoi'
+        });
+        peopleGroup.add(sol);
+        animatedPeople.push({
+          mesh: sol,
+          type: 'truongson_marcher',
+          progress: (i / 22) % 1.0,
+          speed: 0.022 + (i % 3) * 0.004,
+          sideOffset: i % 2 === 0 ? 0.44 : -0.44,
+          phase: i * 0.7
+        });
+      }
+
+      // 70 Uprising Civilians & Soldiers inside and around Ấp Chiến Lược
+      for (let i = 0; i < 70; i++) {
+        const sx = 4.6 + Math.random() * 10.8;
+        const sz = 0.2 + Math.random() * 6.4;
+        if (!isInsideOctagon(sx, sz, 0.8)) continue;
+        const sy = getTerrainHeight(sx, sz);
+        if (sy < 0.52) continue;
+
+        const isCiv = i % 3 !== 0;
+        const fig = createHumanFigure({
+          role: isCiv ? 'civilian' : 'soldier',
+          shirtColor: isCiv ? civilianColors[i % civilianColors.length] : 0x364820,
+          hatType: isCiv ? 'nonla' : 'mucoi'
+        });
+        fig.position.set(sx, sy, sz);
+        fig.rotation.y = Math.random() * Math.PI * 2;
+        peopleGroup.add(fig);
+      }
+
+      scene.add(peopleGroup);
+
+      // 6. Dramatic Volumetric-Style Explosion Fire & Billowing Smoke Plumes in Ấp Chiến Lược
+      battleFireGroup = new THREE.Group();
+      battleFireGroup.position.set(11.6, getTerrainHeight(11.6, 0.2), 0.2);
+
+      const fireColors = [0xffedd5, 0xfde047, 0xf97316, 0xdc2626];
+      for (let i = 0; i < 28; i++) {
+        const col = fireColors[i % fireColors.length];
+        const fMat = new THREE.MeshBasicMaterial({
+          color: col,
+          transparent: true,
+          opacity: 0.88
+        });
+        const radius = 0.28 + Math.random() * 0.55;
+        const fMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(radius, 1), fMat);
+        const bx = (Math.random() - 0.5) * 3.2;
+        const by = 0.25 + Math.random() * 1.45;
+        const bz = (Math.random() - 0.5) * 2.0;
+        fMesh.position.set(bx, by, bz);
+        battleFireGroup.add(fMesh);
+        explosionParticles.push({
+          mesh: fMesh,
+          baseY: by,
+          baseScale: 0.8 + Math.random() * 0.5,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      for (let i = 0; i < 34; i++) {
+        const sMat = new THREE.MeshStandardMaterial({
+          color: i % 2 === 0 ? 0x57534e : 0x78716c,
+          roughness: 0.95,
+          emissive: 0x451a03,
+          emissiveIntensity: 0.35
+        });
+        const radius = 0.38 + Math.random() * 0.68;
+        const sMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(radius, 1), sMat);
+        const sx = (Math.random() - 0.5) * 4.4;
+        const sy = 0.5 + Math.random() * 2.5;
+        const sz = (Math.random() - 0.5) * 2.6;
+        sMesh.position.set(sx, sy, sz);
+        battleFireGroup.add(sMesh);
+        smokeParticles.push({
+          mesh: sMesh,
+          baseY: sy,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      explosionLight1 = new THREE.PointLight(0xff6b00, 3.2, 14);
+      explosionLight1.position.set(0, 1.5, 0);
+      battleFireGroup.add(explosionLight1);
+
+      explosionLight2 = new THREE.PointLight(0xfbbf24, 2.2, 10);
+      explosionLight2.position.set(1.4, 1.0, 0.5);
+      battleFireGroup.add(explosionLight2);
+
+      scene.add(battleFireGroup);
+    }
+
+    // ============================================================================
+    // 11. UI INTERACTION, CAMERA TOUR & PARAMETER HANDLERS
+    // ============================================================================
+    const LABEL_ANCHORS = [
+      { id: 'lbl-mienbac', pos: new THREE.Vector3(-12.2, 6.9, -1.8) },
+      { id: 'lbl-truongson', pos: new THREE.Vector3(-0.6, 5.2, -3.5) },
+      { id: 'lbl-miennam', pos: new THREE.Vector3(2.2, 2.8, 4.6) },
+      { id: 'lbl-apchienluoc', pos: new THREE.Vector3(10.2, 2.6, 3.2) }
+    ];
+
+    function update3DLabels() {
+      const halfW = window.innerWidth / 2;
+      const halfH = window.innerHeight / 2;
+
+      LABEL_ANCHORS.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (!el) return;
+        const v = item.pos.clone().project(camera);
+        if (v.z > 1) {
+          el.style.display = 'none';
+          return;
+        }
+        el.style.display = 'block';
+        const x = v.x * halfW + halfW;
+        const y = -(v.y * halfH) + halfH;
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+      });
+    }
+
+    function focusZone(zoneKey) {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('cam-' + zoneKey);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const info = ZONE_INFO[zoneKey];
+      if (info) {
+        document.getElementById('info-card').classList.remove('hidden');
+        document.getElementById('zone-icon').textContent = info.icon;
+        document.getElementById('zone-title').textContent = info.title;
+        document.getElementById('zone-desc').innerHTML = info.desc;
+      }
+
+      isCameraTransitioning = true;
+      switch (zoneKey) {
+        case 'overview':
+          cameraTargetPos.set(0, 25.5, 39.5);
+          controlsTargetPos.set(0, 2.5, 1.0);
+          break;
+        case 'mienbac':
+          cameraTargetPos.set(-15.5, 9.8, 11.5);
+          controlsTargetPos.set(-11.4, 3.2, 0.5);
+          break;
+        case 'truongson':
+          cameraTargetPos.set(-1.5, 12.5, 11.0);
+          controlsTargetPos.set(-2.5, 4.8, -4.5);
+          break;
+        case 'miennam':
+          cameraTargetPos.set(-2.5, 8.2, 20.5);
+          controlsTargetPos.set(-1.5, 1.0, 6.8);
+          break;
+        case 'apchienluoc':
+          cameraTargetPos.set(15.5, 9.5, 15.8);
+          controlsTargetPos.set(10.5, 2.2, 1.8);
+          break;
+        case 'micrograss':
+          cameraTargetPos.set(-4.2, 3.4, 14.2);
+          controlsTargetPos.set(-3.2, 0.65, 8.8);
+          break;
+      }
+    }
+
+    function setLightingMode(mode) {
+      params.lightingMode = mode;
+      document.getElementById('btn-StudioLight').classList.toggle('active', mode === 'studio');
+      document.getElementById('btn-NightLight').classList.toggle('active', mode === 'night');
+
+      if (mode === 'night') {
+        sunLight.intensity = 0.28;
+        ambientLight.intensity = 0.22;
+        hemiLight.intensity = 0.25;
+        renderer.toneMappingExposure = 1.05;
+        updateDetailParam('lampIntensity', 1.85);
+      } else {
+        sunLight.intensity = 1.35;
+        ambientLight.intensity = 0.55;
+        hemiLight.intensity = 0.65;
+        renderer.toneMappingExposure = 1.15;
+        updateDetailParam('lampIntensity', 1.2);
+      }
+    }
+
+    function toggleAutoRotate() {
+      params.autoRotate = !params.autoRotate;
+      controls.autoRotate = params.autoRotate;
+      controls.autoRotateSpeed = 0.85;
+      document.getElementById('btn-AutoRotate').classList.toggle('active', params.autoRotate);
+    }
+
+    function toggleControlPanel() {
+      document.getElementById('control-panel').classList.toggle('hidden');
+    }
+
+    function updateDetailParam(key, val) {
+      const v = parseFloat(val);
+      params[key] = v;
+
+      if (key === 'windSpeed') {
+        if (grassMaterial) grassMaterial.uniforms.uWindSpeed.value = v;
+        document.getElementById('val-grass').textContent = `Gió: ${v.toFixed(1)}x`;
+      } else if (key === 'grassScale') {
+        if (grassMaterial) grassMaterial.uniforms.uGrassScale.value = v;
+        document.getElementById('val-grassHeight').textContent = `${Math.round(v * 100)}%`;
+      } else if (key === 'waveHeight') {
+        if (waterMaterial) waterMaterial.uniforms.uWaveHeight.value = v;
+        document.getElementById('val-wave').textContent = `Sóng: ${v.toFixed(1)}x`;
+      } else if (key === 'waterSpeed') {
+        if (waterMaterial) waterMaterial.uniforms.uWaterSpeed.value = v;
+        if (waterfallMaterial) waterfallMaterial.uniforms.uSpeed.value = v;
+      } else if (key === 'lampIntensity') {
+        document.getElementById('val-lights').textContent = `${Math.round(v * 100)}%`;
+        lampHalos.forEach(mat => {
+          mat.opacity = Math.min(1, v * 0.78);
+        });
+      }
+    }
+
+    function toggleSubFeature(feature, enabled) {
+      if (feature === 'rimLeds' && rimLedGroup) rimLedGroup.visible = enabled;
+      if (feature === 'streetLamps' && streetLampGroup) streetLampGroup.visible = enabled;
+      if (feature === 'houseLights') {
+        houseWindowMaterials.forEach(m => {
+          m.color.setHex(enabled ? 0xfde047 : 0x292524);
+        });
+      }
+      if (feature === 'battleFire' && battleFireGroup) battleFireGroup.visible = enabled;
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // ============================================================================
+    // 12. MAIN ANIMATION LOOP (EVERY MECHANICAL & ENVIRONMENTAL PART RUNS LIVE)
+    // ============================================================================
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = clock.getDelta();
+      const elapsed = clock.getElapsedTime();
+
+      // 1. Update Custom Shaders (Grass Wind, River Waves, Dam Waterfall, Vietnam Flags)
+      if (grassMaterial) grassMaterial.uniforms.uTime.value = elapsed;
+      if (waterMaterial) waterMaterial.uniforms.uTime.value = elapsed;
+      if (waterfallMaterial) waterfallMaterial.uniforms.uTime.value = elapsed;
+      flagMaterials.forEach(fm => (fm.uniforms.uTime.value = elapsed));
+
+      // 2. Spin Hydroelectric Dam Turbine Rotors & Rise Factory Smokestack Steam
+      hydroTurbines.forEach((rotor, idx) => {
+        rotor.rotation.z += dt * (8.0 + idx * 1.5) * params.waterSpeed;
+      });
+      smokestackPlumes.forEach(sp => {
+        const cycle = (elapsed * 0.65 + sp.idx * 0.2 + sp.phase) % 1.0;
+        sp.mesh.position.y = 2.5 + cycle * 1.6;
+        sp.mesh.position.x = Math.sin(elapsed * 2.0 + sp.phase + cycle * 4.0) * 0.18 * cycle;
+        const s = 0.7 + cycle * 1.35;
+        sp.mesh.scale.setScalar(s);
+      });
+
+      // 3. Animate Convoys of Supply Trucks + Spin Every Truck Wheel
+      truongSonTrucks.forEach(truck => {
+        truck.t = (truck.t + dt * 0.032 * params.vehicleSpeed) % 1.0;
+        if (truck.customRoute) {
+          const pts = truck.customRoute;
+          const totalSegs = pts.length - 1;
+          const scaled = truck.t * totalSegs;
+          const segIdx = Math.min(totalSegs - 1, Math.floor(scaled));
+          const segT = scaled - segIdx;
+          const [x1, z1] = pts[segIdx];
+          const [x2, z2] = pts[segIdx + 1];
+          const tx = THREE.MathUtils.lerp(x1, x2, segT);
+          const tz = THREE.MathUtils.lerp(z1, z2, segT);
+          // Smooth bridge deck elevation when crossing Concrete Bridge at (-10.8, 2.75)
+          const bridgeDist = Math.hypot(tx + 10.8, tz - 2.75);
+          const ty = bridgeDist < 2.8 ? 1.98 : Math.max(0.68, getTerrainHeight(tx, tz));
+          truck.mesh.position.set(tx, ty + 0.02, tz);
+          truck.mesh.rotation.y = Math.atan2(z1 - z2, x2 - x1);
+        } else {
+          const p1 = getRoadPoint(truck.t);
+          const p2 = getRoadPoint((truck.t + 0.015) % 1.0);
+          const y1 = getTerrainHeight(p1.x, p1.z);
+          truck.mesh.position.set(p1.x, y1 + 0.02, p1.z);
+          const yaw = Math.atan2(p1.z - p2.z, p2.x - p1.x);
+          truck.mesh.rotation.y = yaw;
+        }
+        // Spin all 4 wheels on every moving truck
+        if (truck.mesh.userData.wheels) {
+          truck.mesh.userData.wheels.forEach(w => {
+            w.rotation.z -= dt * 9.5 * params.vehicleSpeed;
+          });
+        }
+      });
+
+      // 4. Spin Helicopter Main Rotors, Tail Rotors & Hover/Sweep Searchlights
+      helicopterRotors.forEach(rotor => {
+        rotor.rotation.y += dt * 22.0 * Math.max(0.2, params.vehicleSpeed);
+      });
+      helicopterTailRotors.forEach(tRotor => {
+        tRotor.rotation.z += dt * 28.0 * Math.max(0.2, params.vehicleSpeed);
+      });
+      helicopterSearchlights.forEach(hl => {
+        hl.heli.position.y = hl.baseY + Math.sin(elapsed * 2.8 + hl.phase) * 0.14;
+        hl.heli.rotation.z = -0.10 + Math.sin(elapsed * 1.6 + hl.phase) * 0.06;
+        hl.mesh.rotation.z = Math.sin(elapsed * 1.9 + hl.phase) * 0.32;
+        hl.mesh.rotation.x = Math.cos(elapsed * 1.4 + hl.phase) * 0.25;
+      });
+
+      // 5. Animate Naval Warships: Patrol Motion, Radar Spin, Gun Turret Tracking & Cannon Fire
+      riverBoats.forEach(b => {
+        const patrolSpeed = Math.max(0.25, params.waterSpeed) * params.vehicleSpeed;
+        const offset = Math.sin(elapsed * 0.65 * patrolSpeed + b.phase) * (b.cruiseRadius || 0.22);
+        b.mesh.position.x = b.baseX + Math.cos(b.baseRotY) * offset;
+        b.mesh.position.z = b.baseZ - Math.sin(b.baseRotY) * offset;
+        b.mesh.position.y = b.baseY + Math.sin(elapsed * 2.8 + b.phase) * 0.028 * params.waveHeight;
+        b.mesh.rotation.z = Math.sin(elapsed * 2.1 + b.phase) * 0.038 * params.waveHeight;
+        b.mesh.rotation.x = Math.cos(elapsed * 1.7 + b.phase) * 0.022 * params.waveHeight;
+
+        if (b.oar) {
+          b.oar.rotation.y = Math.sin(elapsed * 3.8 + b.phase) * 0.48;
+        }
+        if (b.radarDish) {
+          b.radarDish.rotation.y += dt * 4.5 * Math.max(0.3, params.vehicleSpeed);
+        }
+        if (b.bowTurret) {
+          b.bowTurret.turret.rotation.y = Math.sin(elapsed * 1.4 + b.phase) * 0.65;
+          const firePulse = Math.sin(elapsed * 9.0 + b.phase);
+          const isFiring = firePulse > 0.86;
+          b.bowTurret.flashMat.opacity = isFiring ? 0.95 : 0.0;
+          b.bowTurret.flashMesh.scale.setScalar(0.8 + Math.random() * 0.5);
+        }
+        if (b.sternTurret) {
+          b.sternTurret.turret.rotation.y = Math.PI + Math.cos(elapsed * 1.6 + b.phase) * 0.55;
+          const firePulse2 = Math.cos(elapsed * 11.0 + b.phase);
+          b.sternTurret.flashMat.opacity = firePulse2 > 0.88 ? 0.90 : 0.0;
+        }
+        if (b.wake) {
+          const wakePulse = 0.88 + Math.sin(elapsed * 6.5 + b.phase) * 0.15;
+          b.wake.scale.set(wakePulse, 1, wakePulse);
+        }
+      });
+
+      // 6. Animate Battlefield Tanks: Turret Scan, Cannon Recoil & Muzzle Blast
+      animatedTanks.forEach(tk => {
+        tk.turretGroup.rotation.y = Math.sin(elapsed * 0.9 + tk.phase) * 0.45;
+        const shotCycle = (elapsed * 0.75 + tk.phase) % 1.0;
+        if (shotCycle < 0.08) {
+          tk.blastMat.opacity = 0.95;
+          tk.blastMesh.scale.setScalar(0.9 + Math.random() * 0.6);
+          tk.barrelGroup.position.x = -0.09; // Cannon recoil kickback
+        } else {
+          tk.blastMat.opacity = 0.0;
+          tk.barrelGroup.position.x = THREE.MathUtils.lerp(tk.barrelGroup.position.x, 0, 0.15);
+        }
+      });
+
+      // 7. Animate Waterfall Splash Foam Bubbles at Base of Dam
+      waterfallSplashParticles.forEach(sp => {
+        sp.mesh.position.y = sp.baseY + Math.abs(Math.sin(elapsed * 5.5 + sp.phase)) * 0.16;
+        const s = sp.baseScale * (0.85 + Math.sin(elapsed * 7.0 + sp.phase) * 0.25);
+        sp.mesh.scale.setScalar(s);
+      });
+
+      combatGunners.forEach(g => {
+        const cycle = Math.sin(elapsed * 14.0 * g.fireRate + g.phase);
+        const firing = cycle > 0.72;
+        g.coreMat.opacity = firing ? 0.95 : 0.0;
+        g.outerMat.opacity = firing ? 0.82 : 0.0;
+        if (firing) {
+          const s = 0.8 + Math.random() * 0.6;
+          g.flashGroup.scale.set(s, s, s);
+          g.fig.position.y = getTerrainHeight(g.fig.position.x, g.fig.position.z) + 0.012;
+        }
+      });
+
+      tracerBullets.forEach(tb => {
+        tb.progress += dt * tb.speed * Math.max(0.4, params.vehicleSpeed);
+        if (tb.progress > 1.0) {
+          tb.progress = 0.0;
+        }
+        tb.mesh.position.lerpVectors(tb.start, tb.end, tb.progress);
+        tb.mesh.lookAt(tb.end);
+        tb.mesh.visible = battleFireGroup ? battleFireGroup.visible : true;
+      });
+
+      animatedPeople.forEach(p => {
+        if (p.type === 'truongson_marcher') {
+          p.progress = (p.progress + dt * p.speed * params.vehicleSpeed) % 1.0;
+          const pt1 = getRoadPoint(p.progress);
+          const pt2 = getRoadPoint((p.progress + 0.01) % 1.0);
+          const px = pt1.x + p.sideOffset;
+          const pz = pt1.z + p.sideOffset * 0.5;
+          const py = getTerrainHeight(px, pz);
+          const stepBob = Math.abs(Math.sin(elapsed * 8.0 + p.phase)) * 0.025;
+          p.mesh.position.set(px, py + stepBob, pz);
+          p.mesh.rotation.y = Math.atan2(pt2.x - pt1.x, pt2.z - pt1.z);
+        } else if (p.type === 'village_walker') {
+          p.progress += dt * p.speed * p.dir * Math.max(0.3, params.vehicleSpeed);
+          if (p.progress > 1.0) { p.progress = 1.0; p.dir = -1; }
+          if (p.progress < 0.0) { p.progress = 0.0; p.dir = 1; }
+
+          const path = p.path;
+          const totalSegs = path.length - 1;
+          const scaled = p.progress * totalSegs;
+          const segIdx = Math.min(totalSegs - 1, Math.floor(scaled));
+          const segT = scaled - segIdx;
+          const [x1, z1] = path[segIdx];
+          const [x2, z2] = path[segIdx + 1];
+          const vx = THREE.MathUtils.lerp(x1, x2, segT);
+          const vz = THREE.MathUtils.lerp(z1, z2, segT);
+          const vy = Math.max(0.48, getTerrainHeight(vx, vz));
+          const stepBob = Math.abs(Math.sin(elapsed * 7.0 + p.phase)) * 0.022;
+          p.mesh.position.set(vx, vy + stepBob, vz);
+          p.mesh.rotation.y = Math.atan2((x2 - x1) * p.dir, (z2 - z1) * p.dir);
+        }
+      });
+
+      explosionParticles.forEach(p => {
+        const pulse = 1.0 + Math.sin(elapsed * 7.5 + p.phase) * 0.18;
+        p.mesh.scale.setScalar(p.baseScale * pulse);
+      });
+      smokeParticles.forEach(s => {
+        s.mesh.position.y = s.baseY + Math.sin(elapsed * 2.0 + s.phase) * 0.12;
+        s.mesh.rotation.y += dt * 0.35;
+      });
+      if (explosionLight1 && explosionLight2) {
+        explosionLight1.intensity = (2.8 + Math.sin(elapsed * 16.0) * 0.9) * params.lampIntensity;
+        explosionLight2.intensity = (2.0 + Math.cos(elapsed * 12.0) * 0.7) * params.lampIntensity;
+      }
+
+      if (isCameraTransitioning) {
+        camera.position.lerp(cameraTargetPos, 0.065);
+        controls.target.lerp(controlsTargetPos, 0.065);
+        if (camera.position.distanceTo(cameraTargetPos) < 0.08) {
+          isCameraTransitioning = false;
+        }
+      }
+
+      controls.update();
+      update3DLabels();
+      renderer.render(scene, camera);
+    }
+
+    window.onload = initScene;
+  </script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+const fs = require('fs');
+const path = require('path');
+
+const uploadsDir = path.resolve(__dirname, 'media', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('Created media/uploads directory');
+}
+
+const defaultData = {
+  lastUpdated: Date.now(),
+  banners: {
+    north: {
+      title: "KHU TRƯNG BÀY 1954 - 1960 • ĐỒNG KHỞI BẾN TRE & XÂY DỰNG CNXH MIỀN BẮC",
+      subtitle: "Đại hội III của Đảng • Hậu phương lớn Miền Bắc vững mạnh • Phong trào Ba sẵn sàng - Ba đảm đang",
+      bgColor: "#991b1b",
+      textColor: "#fef08a"
+    },
+    south: {
+      title: "KHÔNG GIAN TỔNG KẾT • CUỘC KHÁNG CHIẾN CHỐNG MỸ, CỨU NƯỚC (1954 – 1975)",
+      subtitle: "Thắng lợi trọn vẹn của tinh thần \"Không có gì quý hơn độc lập, tự do!\" • Non sông thu về một mối",
+      bgColor: "#991b1b",
+      textColor: "#fef08a"
+    },
+    east: {
+      title: "KHU TRƯNG BÀY 1961 - 1972 • ĐÁNH BẠI CÁC CHIẾN LƯỢC CHIẾN TRANH CỦA ĐẾ QUỐC MỸ",
+      subtitle: "Chiến tranh đặc biệt • Chiến tranh cục bộ • Việt Nam hóa chiến tranh • Điện Biên Phủ trên không 1972",
+      bgColor: "#991b1b",
+      textColor: "#fef08a"
+    },
+    west: {
+      title: "CHIẾN DỊCH HỒ CHÍ MINH 1975 • ĐẠI THẮNG MÙA XUÂN - TOÀN THẮNG NON SÔNG",
+      subtitle: "Chiến dịch Tây Nguyên • Chiến dịch Huế - Đà Nẵng • 11h30 ngày 30/4/1975 giải phóng Sài Gòn",
+      bgColor: "#991b1b",
+      textColor: "#fef08a"
+    },
+    ceiling: {
+      title: "NƯỚC VIỆT NAM LÀ MỘT, DÂN TỘC VIỆT NAM LÀ MỘT",
+      subtitle: "SÔNG CÓ THỂ CẠN, NÚI CÓ THỂ MÒN, SONG CHÂN LÝ ĐÓ KHÔNG BAO GIỜ THAY ĐỔI",
+      bgColor: "#7f1d1d",
+      textColor: "#fef08a"
+    }
+  },
+  exhibits: [
+    {
+      id: "exhibit-1",
+      slot: 1,
+      wall: "north",
+      x: -8.4, y: 2.1, z: -9.88, rotY: 0,
+      title: "Hội nghị Giơ-ne-vơ năm 1954 về Đông Dương",
+      year: "1954",
+      author: "Đoàn đại biểu Việt Nam DCCH",
+      shortDescription: "Đoàn đại biểu Việt Nam Dân chủ Cộng hòa do Thứ trưởng Tạ Quang Bửu dẫn đầu ký kết Hiệp định Giơ-ne-vơ.",
+      historicalContent: "Ngày 21/7/1954, Hiệp định Giơ-ne-vơ được ký kết, công nhận độc lập, chủ quyền, thống nhất và toàn vẹn lãnh thổ của Việt Nam, Lào, Campuchia. Sông Bến Hải vĩ tuyến 17 được chọn làm giới tuyến quân sự tạm thời.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image1.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-2",
+      slot: 2,
+      wall: "north",
+      x: -4.8, y: 2.1, z: -9.88, rotY: 0,
+      title: "Bản đồ phân định giới tuyến quân sự tạm thời vĩ tuyến 17",
+      year: "1954",
+      author: "Ban Biên chế Quân giới - BTTM",
+      shortDescription: "Bản đồ xác định vĩ tuyến 17 và khu phi quân sự dọc sông Bến Hải, chia cắt đất nước trong hơn 20 năm.",
+      historicalContent: "Hiệp định quy định thời hạn 2 năm (đến tháng 7/1956) sẽ tiến hành tổng tuyển cử tự do thống nhất đất nước. Tuy nhiên đế quốc Mỹ đã can thiệp, dựng nên chính quyền Ngô Đình Diệm nhằm chia cắt lâu dài nước ta.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image2.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-3",
+      slot: 3,
+      wall: "north",
+      x: 4.8, y: 2.1, z: -9.88, rotY: 0,
+      title: "Bộ đội tiếp quản Thủ đô Hà Nội ngày 10/10/1954",
+      year: "1954",
+      author: "Thông tấn xã Việt Nam",
+      shortDescription: "Đoàn quân chiến thắng tiến về tiếp quản Thủ đô trong rừng cờ hoa rực rỡ và tiếng reo hò của nhân dân.",
+      historicalContent: "Sáng ngày 10/10/1954, các đơn vị Quân đội nhân dân Việt Nam tiến vào tiếp quản Hà Nội trong niềm hân hoan vỡ òa của hàng vạn nhân dân Thủ đô, đánh dấu miền Bắc hoàn toàn giải phóng.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image3.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-4",
+      slot: 4,
+      wall: "north",
+      x: 8.4, y: 2.1, z: -9.88, rotY: 0,
+      title: "Khôi phục kinh tế & Cải cách ruộng đất ở miền Bắc",
+      year: "1955-1957",
+      author: "Tư liệu Giáo án Bài 8",
+      shortDescription: "Nông dân miền Bắc phấn khởi nhận ruộng đất cày cấy, hàn gắn vết thương chiến tranh sau 9 năm kháng chiến.",
+      historicalContent: "Trong giai đoạn 1954 - 1960, miền Bắc hoàn thành cải cách ruộng đất, thực hiện khẩu hiệu người cày có ruộng, tạo cơ sở kinh tế vững chắc để bước vào công cuộc xây dựng chủ nghĩa xã hội.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image4.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-5",
+      slot: 5,
+      wall: "west",
+      x: -11.88, y: 2.1, z: -6.5, rotY: Math.PI / 2,
+      title: "Đại hội đại biểu toàn quốc lần thứ III của Đảng",
+      year: "1960",
+      author: "Văn kiện Đảng Cộng sản Việt Nam",
+      shortDescription: "Đại hội xác định đường lối chiến lược cách mạng hai miền: Miền Bắc xây dựng CNXH, miền Nam giải phóng dân tộc.",
+      historicalContent: "Tháng 9/1960 tại Hà Nội, Đại hội III khẳng định: Cách mạng XHCN ở miền Bắc giữ vai trò quyết định nhất; Cách mạng dân tộc dân chủ nhân dân ở miền Nam giữ vai trò quyết định trực tiếp đối với sự nghiệp giải phóng miền Nam.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image5.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-6",
+      slot: 6,
+      wall: "west",
+      x: -11.88, y: 2.1, z: -3.2, rotY: Math.PI / 2,
+      title: "Nhân dân Bến Tre nổi dậy trong Phong trào Đồng khởi",
+      year: "1960",
+      author: "Bảo tàng Bến Tre",
+      shortDescription: "Quần chúng nhân dân vùng lên phá tan chính quyền địch ở thôn xã, đánh dấu bước ngoặt cách mạng miền Nam.",
+      historicalContent: "Ngày 17/1/1960, phong trào Đồng khởi bùng nổ tại Mỏ Cày (Bến Tre) rồi lan rộng khắp Nam Bộ và Trung Trung Bộ, chuyển cách mạng miền Nam từ thế giữ gìn lực lượng sang thế tiến công.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image6.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-7",
+      slot: 7,
+      wall: "west",
+      x: -11.88, y: 2.1, z: 0.0, rotY: Math.PI / 2,
+      title: "Nữ tướng Nguyễn Thị Định & Đội quân tóc dài huyền thoại",
+      year: "1960",
+      author: "Bảo tàng Phụ nữ Nam Bộ",
+      shortDescription: "Đội quân tóc dài Bến Tre dùng bạo lực chính trị kết hợp vũ trang làm rung chuyển bộ máy kìm kẹp của địch.",
+      historicalContent: "Đồng chí Nguyễn Thị Định chỉ huy phong trào Đồng khởi Bến Tre, khai sinh ra 'Đội quân tóc dài' mưu trí, dũng cảm, trở thành nỗi khiếp sợ của quân đội Sài Gòn và cố vấn Mỹ.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image7.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-8",
+      slot: 8,
+      wall: "west",
+      x: -11.88, y: 2.1, z: 3.2, rotY: Math.PI / 2,
+      title: "Thành lập Mặt trận Dân tộc Giải phóng miền Nam Việt Nam",
+      year: "1960",
+      author: "Lịch sử Biên niên Mặt trận",
+      shortDescription: "Ngày 20/12/1960, Mặt trận ra đời tại Tây Ninh, đoàn kết mọi tầng lớp nhân dân đấu tranh chống Mỹ - Diệm.",
+      historicalContent: "Mặt trận Dân tộc Giải phóng miền Nam Việt Nam ra đời với cương lĩnh hòa bình, độc lập, dân chủ, cải thiện dân sinh, tiến tới hòa bình thống nhất Tổ quốc.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image8.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-9",
+      slot: 9,
+      wall: "west",
+      x: -11.88, y: 2.1, z: 6.5, rotY: Math.PI / 2,
+      title: "Phá tan quốc sách Ấp chiến lược của Mỹ - Diệm",
+      year: "1961-1963",
+      author: "Ảnh tư liệu Quân đội",
+      shortDescription: "Nhân dân miền Nam anh dũng phá rào kẽm gai, biến ấp chiến lược thành làng chiến đấu kiên cường.",
+      historicalContent: "Mỹ và chính quyền Sài Gòn coi Ấp chiến lược là xương sống của Chiến tranh đặc biệt. Dưới ngọn cờ của Mặt trận, quân và dân ta kiên quyết bám đất bám làng, phá vỡ từng mảng lớn hệ thống ấp chiến lược.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image9.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-10",
+      slot: 10,
+      wall: "east",
+      x: 11.88, y: 2.1, z: -6.5, rotY: -Math.PI / 2,
+      title: "Cầu Hiền Lương - Sông Bến Hải: Biểu tượng nỗi đau chia cắt",
+      year: "1954-1975",
+      author: "Bảo tàng Tỉnh Quảng Trị",
+      shortDescription: "Cây cầu bắc qua sông Bến Hải chia cắt non sông hơn 20 năm, minh chứng cho ý chí sắt đá thống nhất đất nước.",
+      historicalContent: "Cầu Hiền Lương dài 178m, sơn 2 màu đối lập: nửa bờ Bắc sơn xanh, nửa bờ Nam sơn vàng. Nơi đây đã diễn ra cuộc chiến cờ, chiến loa phát thanh và cuộc đọ sức ý chí quyết liệt giữa hai bờ giới tuyến.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image10.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-11",
+      slot: 11,
+      wall: "east",
+      x: 11.88, y: 2.1, z: -3.2, rotY: -Math.PI / 2,
+      title: "Chiến thắng vang dội trận Ấp Bắc (Mỹ Tho)",
+      year: "1963",
+      author: "Quân khu 9",
+      shortDescription: "Ngày 02/01/1963, quân giải phóng đánh bại chiến thuật Trực thăng vận và Thiết xa vận của quân đội Sài Gòn.",
+      historicalContent: "Chiến thắng Ấp Bắc chứng minh quân và dân miền Nam hoàn toàn có khả năng đánh bại chiến lược 'Chiến tranh đặc biệt' của Mỹ, dấy lên phong trào 'Thi đua Ấp Bắc, giết giặc lập công' trên toàn miền Nam.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image11.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-12",
+      slot: 12,
+      wall: "east",
+      x: 11.88, y: 2.1, z: 3.2, rotY: -Math.PI / 2,
+      title: "Phong trào đấu tranh chính trị ở các đô thị miền Nam",
+      year: "1963",
+      author: "Ảnh tư liệu Sài Gòn",
+      shortDescription: "Học sinh, sinh viên và phật tử Sài Gòn, Huế xuống đường biểu tình đòi lật đổ chế độ độc tài Ngô Đình Diệm.",
+      historicalContent: "Cuộc khủng hoảng chính trị sâu sắc năm 1963 buộc Mỹ phải tiến hành đảo chính lật đổ anh em Ngô Đình Diệm - Ngô Đình Nhu ngày 01/11/1963, khiến nội bộ chính quyền tay sai suy sụp nghiêm trọng.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image12.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-13",
+      slot: 13,
+      wall: "east",
+      x: 11.88, y: 2.1, z: 6.5, rotY: -Math.PI / 2,
+      title: "Bộ đội Giải phóng tấn công trong Chiến dịch Bình Giã",
+      year: "1964",
+      author: "Bộ Chỉ huy Miền",
+      shortDescription: "Chiến dịch Bình Giã (Bà Rịa) tiêu diệt nhiều tiểu đoàn chủ lực địch, làm phá sản cơ bản Chiến tranh đặc biệt.",
+      historicalContent: "Từ tháng 12/1964 đến 1/1965, Chiến dịch Bình Giã thắng lợi giòn giã, tiêu diệt nhiều sinh lực tinh nhuệ địch, đánh bại các chiến thuật hiện đại của cố vấn quân sự Mỹ.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image13.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-14",
+      slot: 14,
+      wall: "south",
+      x: -8.4, y: 2.1, z: 9.88, rotY: Math.PI,
+      title: "Chiến thắng Ba Gia (Quảng Ngãi) & Chiến thắng Đồng Xoài",
+      year: "1965",
+      author: "Quân khu 5 & Miền Đông",
+      shortDescription: "Các đòn tiến công liên tiếp tại Ba Gia và Đồng Xoài chôn vùi hoàn toàn chiến lược Chiến tranh đặc biệt.",
+      historicalContent: "Tháng 5/1965 thắng lợi Ba Gia và tháng 6/1965 thắng lợi Đồng Xoài đã khẳng định sự sụp đổ hoàn toàn của chiến lược 'Chiến tranh đặc biệt', buộc đế quốc Mỹ phải đưa quân viễn chinh Mỹ vào miền Nam.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image14.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-15",
+      slot: 15,
+      wall: "south",
+      x: -4.8, y: 2.1, z: 9.88, rotY: Math.PI,
+      title: "Thanh niên miền Bắc sôi nổi phong trào Ba sẵn sàng",
+      year: "1964",
+      author: "Trung ương Đoàn TNCS Hồ Chí Minh",
+      shortDescription: "Hàng triệu thanh niên miền Bắc hăng hái viết đơn bằng máu xin gia nhập quân ngũ lên đường chi viện tiền tuyến.",
+      historicalContent: "Phong trào 'Ba sẵn sàng' (Sẵn sàng chiến đấu; Sẵn sàng gia nhập lực lượng vũ trang; Sẵn sàng đi bất cứ nơi đâu, làm bất cứ việc gì Tổ quốc cần) trở thành biểu tượng rực rỡ của tuổi trẻ Việt Nam.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image15.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-16",
+      slot: 16,
+      wall: "south",
+      x: 4.8, y: 2.1, z: 9.88, rotY: Math.PI,
+      title: "Phụ nữ miền Bắc thi đua phong trào Ba đảm đang",
+      year: "1965",
+      author: "Hội Liên hiệp Phụ nữ Việt Nam",
+      shortDescription: "Phụ nữ hậu phương vừa sản xuất giỏi, vừa chăm lo gia đình, vừa sẵn sàng chiến đấu để chồng con yên tâm ra trận.",
+      historicalContent: "Phong trào 'Ba đảm đang' là điểm tựa vững chãi của hậu phương lớn miền Bắc, đảm bảo sản xuất lương thực và vũ khí dồi dào chi viện cho tiền tuyến lớn miền Nam đánh thắng giặc Mỹ.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image16.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-17",
+      slot: 17,
+      wall: "south",
+      x: 8.4, y: 2.1, z: 9.88, rotY: Math.PI,
+      title: "Đoàn xe xẻ dọc Trường Sơn đi cứu nước",
+      year: "1959-1975",
+      author: "Binh đoàn 559",
+      shortDescription: "Tuyến vận tải chiến lược Đường Hồ Chí Minh huyền thoại vượt mưa bom bão đạn chi viện sức người sức của.",
+      historicalContent: "Đoàn 559 mở đường Trường Sơn trên bộ và Đoàn 759 mở đường Hồ Chí Minh trên biển với những con tàu Không số cảm tử, làm nên con đường huyền thoại nối liền hai miền Nam Bắc thống nhất.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image17.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "exhibit-18",
+      slot: 18,
+      wall: "south",
+      x: 0.0, y: 2.1, z: 9.88, rotY: Math.PI,
+      title: "Đại thắng Mùa Xuân 1975: Non sông liền một dải",
+      year: "1975",
+      author: "Nhiếp ảnh gia Trần Mai Hưởng",
+      shortDescription: "Xe tăng 390 húc đổ cổng Dinh Độc Lập trưa ngày 30/4/1975, kết thúc toàn thắng 21 năm kháng chiến chống Mỹ.",
+      historicalContent: "Đúng 11 giờ 30 phút ngày 30/4/1975, lá cờ Mặt trận Giải phóng tung bay trên nóc Dinh Độc Lập, chiến dịch Hồ Chí Minh toàn thắng, giải phóng hoàn toàn miền Nam, thống nhất đất nước.",
+      mediaType: "image",
+      mediaUrl: "./media/TI_T_1_B_I_8-image18.png",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    }
+  ],
+  pedestals: [
+    {
+      id: "pedestal-1",
+      slot: "P1",
+      x: -3.4, z: -4.5,
+      title: "Xe Tăng 390 Húc Đổ Cổng Dinh Độc Lập",
+      year: "1975",
+      author: "Đại đội 4, Lữ đoàn Tăng - Thiết giáp 203",
+      shortDescription: "Chiếc xe tăng T-54B số hiệu 390 húc tung cổng chính Dinh Độc Lập, đánh dấu sự toàn thắng của cuộc kháng chiến chống Mỹ cứu nước.",
+      historicalContent: "Đúng 11 giờ 30 phút ngày 30/4/1975, xe tăng 390 thuộc Đại đội 4, Tiểu đoàn 1, Lữ đoàn Tăng - Thiết giáp 203 đã húc đổ cổng chính Dinh Độc Lập. Trung úy Bùi Quang Thận cắm cờ giải phóng trên nóc Dinh Độc Lập, bắt sống toàn bộ nội các Dương Văn Minh.",
+      mediaType: "model",
+      mediaUrl: "./media/TI_T_3_B_I_8-image14.png",
+      modelType: "tank390",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "pedestal-2",
+      slot: "P2",
+      x: 3.4, z: -4.5,
+      title: "Mũ Cối Bộ Đội Giải Phóng",
+      year: "1954–1975",
+      author: "Quân nhu Quân đội Nhân dân Việt Nam",
+      shortDescription: "Chiếc mũ cối đúc màu xanh ô liu gắn ngôi sao vàng năm cánh, vật dụng bất ly thân của các chiến sĩ giải phóng quân trên khắp chiến trường.",
+      historicalContent: "Chiếc mũ cối gắn liền với hình ảnh Bộ đội Cụ Hồ 'xẻ dọc Trường Sơn đi cứu nước', vượt mưa bom bão đạn, bền bỉ chiến đấu vì độc lập tự do của Tổ quốc.",
+      mediaType: "model",
+      mediaUrl: "./media/TI_T_1_B_I_8-image16.png",
+      modelType: "helmet",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "pedestal-3",
+      slot: "P3",
+      x: -3.4, z: 3.5,
+      title: "Đài Radio Bán Dẫn Cổ Thời Chiến",
+      year: "1960–1975",
+      author: "Bảo tàng Đài Tiếng nói Việt Nam",
+      shortDescription: "Chiếc đài bán dẫn cổ thu bắt làn sóng phát thanh từ Hà Nội, nguồn cổ vũ tinh thần to lớn cho chiến sĩ và đồng bào miền Nam.",
+      historicalContent: "Chiếc đài là phương tiện truyền tin chiến lược giúp truyền đi tiếng nói của Bác Hồ, các bản tin chiến thắng rực lửa từ mặt trận và các bản hiệu lệnh tác chiến bí mật.",
+      mediaType: "model",
+      mediaUrl: "./media/TI_T_2_B_I_8-image1.png",
+      modelType: "radio",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "pedestal-4",
+      slot: "P4",
+      x: 3.4, z: 3.5,
+      title: "Sa Bàn 3D: Hai Miền – Một Khát Vọng Thống Nhất",
+      year: "1954–1975",
+      author: "Mô hình sa bàn tổng hợp lịch sử STEM 3D",
+      shortDescription: "Tái hiện toàn cảnh hai miền: Miền Bắc xây dựng CNXH, Tuyến chi viện Trường Sơn và Phá Ấp chiến lược miền Nam.",
+      historicalContent: "Sa bàn thể hiện rõ nét hai miền đất nước: Phía Bắc với công nghiệp hóa, nhà máy thủy điện; tuyến đường Trường Sơn với đoàn xe xẻ dọc non sông; phía Nam là tiền tuyến quật khởi phá tan ấp chiến lược của địch, hướng tới ngày toàn thắng thống nhất non sông.",
+      mediaType: "image",
+      mediaUrl: "./media/sa_ban_hai_mien_thong_nhat.jpg",
+      modelType: "diorama",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    },
+    {
+      id: "pedestal-5",
+      slot: "P5",
+      x: 0, z: 6.0,
+      title: "Tập Chỉ Thị Chiến Dịch Hồ Chí Minh",
+      year: "1975",
+      author: "Bộ Tổng Tư lệnh Quân đội Nhân dân Việt Nam",
+      shortDescription: "Mệnh lệnh lịch sử ngày 07/04/1975: 'Thần tốc, thần tốc hơn nữa; táo bạo, táo bạo hơn nữa; tranh thủ từng giờ, từng phút xốc tới mặt trận...'",
+      historicalContent: "Mệnh lệnh của Đại tướng Võ Nguyên Giáp gửi các cánh quân giải phóng tiến về Sài Gòn đã thổi bùng ngọn lửa quyết chiến quyết thắng, tạo nên bước tiến thần kỳ giải phóng hoàn toàn miền Nam chỉ trong 55 ngày đêm.",
+      mediaType: "model",
+      mediaUrl: "./media/TI_T_3_B_I_8-image1.png",
+      modelType: "dossier",
+      voiceoverUrl: "",
+      spotlightEnabled: true
+    }
+  ],
+  videoStation: {
+    id: "tv-station-main",
+    title: "🔴 ĐANG PHÁT: TOÀN CẢNH KHÁNG CHIẾN CHỐNG MỸ (1954 – 1975)",
+    subtitle: "Phim tài liệu tư liệu lịch sử bài giảng Bài 8 Lịch sử 12",
+    videoUrl: "./videos/tiet1_overview.mp4",
+    voiceoverUrl: "",
+    spotlightEnabled: true
+  }
+};
+
+const dataFilePath = path.resolve(__dirname, 'museum-data.json');
+fs.writeFileSync(dataFilePath, JSON.stringify(defaultData, null, 2), 'utf8');
+console.log('Saved museum-data.json with', defaultData.exhibits.length, 'exhibits');

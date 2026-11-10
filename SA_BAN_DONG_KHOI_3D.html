@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SA BÀN LỊCH SỬ 3D: NGỌN LỬA ĐỒNG KHỞI (1954 – 1960)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      overflow: hidden; background-color: #070d19;
+      font-family: 'Be Vietnam Pro', sans-serif; color: #f8fafc;
+    }
+    .font-serif-title { font-family: 'Playfair Display', Georgia, serif; }
+    #canvas-container { position: fixed; inset: 0; z-index: 1; }
+    #labels-container { position: fixed; inset: 0; z-index: 10; pointer-events: none; overflow: hidden; }
+    .museum-panel {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(245, 158, 11, 0.45);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+    .stage-card {
+      background: rgba(15, 23, 42, 0.90);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(251, 191, 36, 0.35);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stage-card:hover {
+      transform: translateY(-4px);
+      border-color: #fbbf24;
+      box-shadow: 0 12px 30px rgba(245, 158, 11, 0.3);
+    }
+    .stage-card.active {
+      background: linear-gradient(135deg, rgba(127, 29, 29, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+      border: 2px solid #fde047;
+      box-shadow: 0 0 25px rgba(250, 204, 21, 0.45);
+      transform: translateY(-4px);
+    }
+    .marker-3d {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .marker-3d:hover { transform: translate(-50%, -108%) scale(1.06); z-index: 30; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+    ::-webkit-scrollbar-thumb { background: #d97706; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- 3D CANVAS -->
+  <div id="canvas-container"></div>
+
+  <!-- FLOATING 3D MARKERS -->
+  <div id="labels-container"></div>
+
+  <!-- TOP HEADER BAR -->
+  <header class="fixed top-0 left-0 right-0 z-30 px-4 py-2.5 flex items-center justify-between gap-3 bg-gradient-to-b from-slate-950/95 via-slate-900/85 to-transparent pointer-events-none">
+    <div class="flex items-center gap-3 pointer-events-auto">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-700 to-amber-600 p-0.5 shadow-lg shadow-red-900/50 flex items-center justify-center border border-amber-300">
+        <span class="text-xl">🔥</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider bg-red-600 text-amber-200 rounded">Sa Bàn 3D Chuẩn Mẫu</span>
+          <span class="text-[11px] text-amber-300 font-semibold hidden md:inline">4 Phân Khu • Nhà Lá • Thuyền Nan • Đèn LED</span>
+        </div>
+        <h1 class="font-serif-title text-base md:text-xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 leading-tight">
+          NGỌN LỬA ĐỒNG KHỞI (1954 – 1960)
+        </h1>
+      </div>
+      <button id="btn-back-museum" onclick="backToMuseum()" class="ml-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-700 to-amber-600 hover:from-red-600 hover:to-amber-500 text-white font-extrabold text-xs shadow-lg flex items-center gap-1.5 transition border border-amber-400/50 cursor-pointer">
+        <span>🏛️</span> <span>Về Bảo Tàng 3D</span>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-1.5 pointer-events-auto flex-wrap justify-end">
+      <button id="btn-autotour" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-extrabold text-xs shadow-lg flex items-center gap-1 transition cursor-pointer">
+        <span>▶️</span> <span id="autotour-text">Dẫn truyện</span>
+      </button>
+      <button id="btn-overview" class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-amber-200 border border-amber-500/40 font-bold text-xs flex items-center gap-1 transition cursor-pointer">
+        <span>🔭</span> <span>Toàn cảnh</span>
+      </button>
+      <button id="btn-macro" class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-sky-300 border border-sky-500/40 font-bold text-xs flex items-center gap-1 transition cursor-pointer">
+        <span>🔍</span> <span>Soi cận cảnh</span>
+      </button>
+      <button id="btn-combat" class="px-2.5 py-1.5 rounded-xl bg-red-950/90 hover:bg-red-900 text-amber-200 border border-red-500/40 font-bold text-xs flex items-center gap-1 transition cursor-pointer">
+        <span>🔥</span> <span id="combat-text">Lửa & LED: BẬT</span>
+      </button>
+      <button id="btn-night" class="px-2.5 py-1.5 rounded-xl bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 border border-indigo-400/40 font-bold text-xs flex items-center gap-1 transition cursor-pointer">
+        <span>🌙</span> <span id="night-text">Đêm LED</span>
+      </button>
+      <button id="btn-voice" class="px-2.5 py-1.5 rounded-xl bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1 transition cursor-pointer">
+        <span>🔊</span> <span id="voice-text">Thuyết minh</span>
+      </button>
+      <button id="btn-toggle-ui" class="px-2 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 border border-slate-600 font-bold text-xs transition cursor-pointer" title="Ẩn/Hiện bảng">
+        👁️
+      </button>
+    </div>
+  </header>
+
+  <!-- LEFT PANEL -->
+  <aside id="info-drawer" style="top: 78px;" class="fixed top-32 left-4 z-20 w-80 md:w-96 max-h-[calc(100vh-270px)] museum-panel rounded-2xl p-4 flex flex-col justify-between overflow-y-auto transition-transform duration-300">
+    <div>
+      <div class="flex items-center justify-between border-b border-amber-500/30 pb-2.5 mb-3">
+        <div class="flex items-center gap-2">
+          <span id="detail-badge" class="w-7 h-7 rounded-full bg-red-600 text-amber-200 font-black text-sm flex items-center justify-center border border-amber-300">ALL</span>
+          <span id="detail-period" class="text-xs font-bold uppercase tracking-wider text-amber-400">1954 – 1960</span>
+        </div>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-950 text-red-300 border border-red-500/40 flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Đèn LED Mô Hình
+        </span>
+      </div>
+
+      <h2 id="detail-title" class="font-serif-title text-lg font-bold text-amber-100 mb-2 leading-snug">
+        Sa Bàn Ngọn Lửa Đồng Khởi (1954 – 1960)
+      </h2>
+
+      <div id="detail-led-note" class="mb-3 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-400/30 text-xs text-amber-200 flex items-start gap-2">
+        <span class="text-base leading-none">💡</span>
+        <span><strong>Bố cục chuẩn theo sa bàn:</strong> Đầy đủ 4 khu vực lịch sử, các ngôi nhà tranh, ruộng lúa vàng, đoàn thuyền nan cắm cờ trên dòng sông xanh và hệ thống đèn LED chiếu sáng từng điểm.</span>
+      </div>
+
+      <ul id="detail-list" class="space-y-2 text-xs md:text-sm text-slate-200 leading-relaxed pl-1">
+        <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">•</span> <span><strong>1. Miền Nam sau 1954:</strong> Tòa nhà Chính quyền Ngô Đình Diệm, xe tải quân sự, lính tuần tra và nhân dân Tây Nguyên đấu tranh chính trị.</span></li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">•</span> <span><strong>2. Nghị quyết 15 (01/1959):</strong> Tòa nhà Hội nghị lần thứ 15 BCH Trung ương Đảng cùng bàn đại biểu họp dưới ánh đèn vàng ấm.</span></li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">•</span> <span><strong>3. Bến Tre - Đồng Khởi (17/01/1960):</strong> Cụm nhà lá 3 xã Định Thủy, Phước Hiệp, Bình Khánh rực lửa đồng khởi, nhân dân giương cao cờ và thuyền nan trên sông Nam Bộ.</span></li>
+        <li class="flex items-start gap-2"><span class="text-amber-400 font-bold">•</span> <span><strong>4. Kết quả, Ý nghĩa (20/12/1960):</strong> Lễ đài thành lập Mặt trận Dân tộc Giải phóng miền Nam Việt Nam với hàng ngũ cán bộ, chiến sĩ chỉnh tề.</span></li>
+      </ul>
+    </div>
+
+    <!-- Micro-detail counters -->
+    <div class="mt-4 pt-3 border-t border-slate-700/80 grid grid-cols-3 gap-2 text-center">
+      <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-700">
+        <div class="text-emerald-400 font-black text-xs">16.000+</div>
+        <div class="text-[10px] text-slate-400">Cỏ, Lúa & Dừa</div>
+      </div>
+      <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-700">
+        <div class="text-amber-400 font-black text-xs">120+</div>
+        <div class="text-[10px] text-slate-400">Dân, Lính & Đại biểu</div>
+      </div>
+      <div class="bg-slate-900/90 p-2 rounded-xl border border-slate-700">
+        <div class="text-sky-400 font-black text-xs">6 Thuyền & Cầu</div>
+        <div class="text-[10px] text-slate-400">Sông nước Nam Bộ</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- BOTTOM 4 INTERACTIVE STAGE CARDS -->
+  <footer id="bottom-cards" class="fixed bottom-0 left-0 right-0 z-20 p-3 md:p-4 pointer-events-none transition-transform duration-300">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-3.5 pointer-events-auto">
+      
+      <div onclick="selectStage(1)" id="card-stage-1" class="stage-card rounded-2xl p-3 cursor-pointer flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-1 mb-1.5">
+            <span class="px-2 py-0.5 rounded-full bg-red-700 text-white font-black text-[11px]">1. MIỀN NAM SAU 1954</span>
+            <span class="text-[10px] text-amber-300 font-mono">1954 - 1958</span>
+          </div>
+          <p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">
+            Đèn LED chiếu sáng khu vực chính quyền Ngô Đình Diệm, xe quân sự, cảnh đàn áp và nhân dân đấu tranh chính trị.
+          </p>
+        </div>
+        <div class="mt-2 pt-1.5 border-t border-amber-500/20 flex items-center justify-between text-[10px] text-amber-300 font-semibold">
+          <span>💡 Đèn LED Khu 1</span>
+          <span>Bay tới →</span>
+        </div>
+      </div>
+
+      <div onclick="selectStage(2)" id="card-stage-2" class="stage-card rounded-2xl p-3 cursor-pointer flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-1 mb-1.5">
+            <span class="px-2 py-0.5 rounded-full bg-red-700 text-white font-black text-[11px]">2. NGHỊ QUYẾT 15 (01/1959)</span>
+            <span class="text-[10px] text-amber-300 font-mono">01 / 1959</span>
+          </div>
+          <p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">
+            Đèn LED sáng tại khu vực Hội nghị lần thứ 15 BCH Trung ương Đảng, bàn đại biểu và cờ Đảng mở đường cho Đồng khởi.
+          </p>
+        </div>
+        <div class="mt-2 pt-1.5 border-t border-amber-500/20 flex items-center justify-between text-[10px] text-amber-300 font-semibold">
+          <span>💡 Đèn LED Hội nghị</span>
+          <span>Bay tới →</span>
+        </div>
+      </div>
+
+      <div onclick="selectStage(3)" id="card-stage-3" class="stage-card rounded-2xl p-3 cursor-pointer flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-1 mb-1.5">
+            <span class="px-2 py-0.5 rounded-full bg-red-700 text-white font-black text-[11px]">3. BẾN TRE - ĐỒNG KHỞI</span>
+            <span class="text-[10px] text-amber-300 font-mono">17 / 01 / 1960</span>
+          </div>
+          <p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">
+            Đèn LED nháy tượng trưng cho ngọn lửa Đồng khởi tại 3 xã Định Thủy – Phước Hiệp – Bình Khánh và thuyền trên sông.
+          </p>
+        </div>
+        <div class="mt-2 pt-1.5 border-t border-amber-500/20 flex items-center justify-between text-[10px] text-amber-300 font-semibold">
+          <span>🔥 Lửa Đồng khởi & Sông nước</span>
+          <span>Bay tới →</span>
+        </div>
+      </div>
+
+      <div onclick="selectStage(4)" id="card-stage-4" class="stage-card rounded-2xl p-3 cursor-pointer flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-1 mb-1.5">
+            <span class="px-2 py-0.5 rounded-full bg-red-700 text-white font-black text-[11px]">4. KẾT QUẢ, Ý NGHĨA</span>
+            <span class="text-[10px] text-amber-300 font-mono">20 / 12 / 1960</span>
+          </div>
+          <p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">
+            Đèn LED sáng toàn bộ khu vực lễ đài thành lập Mặt trận Dân tộc Giải phóng miền Nam Việt Nam (20/12/1960).
+          </p>
+        </div>
+        <div class="mt-2 pt-1.5 border-t border-amber-500/20 flex items-center justify-between text-[10px] text-amber-300 font-semibold">
+          <span>⭐ Lễ đài Mặt trận</span>
+          <span>Bay tới →</span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <script>
+    // =========================================================================
+    // THÔNG TIN THUYẾT MINH 4 PHÂN KHU THEO ĐÚNG SA BÀN "NGỌN LỬA ĐỒNG KHỞI"
+    // =========================================================================
+    function backToMuseum() {
+      if (window.parent && window.parent !== window && typeof window.parent.closeDongKhoiDioramaModal === "function") {
+        window.parent.closeDongKhoiDioramaModal();
+      } else {
+        window.location.href = "/";
+      }
+    }
+
+    const STAGES_DATA = {
+      0: {
+        badge: "ALL",
+        period: "1954 – 1960",
+        title: "Toàn Cảnh Sa Bàn Ngọn Lửa Đồng Khởi (1954 – 1960)",
+        ledNote: "Toàn bộ hệ thống đèn LED vàng ấm dọc lối mòn, các tòa nhà, ngọn lửa Bến Tre và dòng sông Nam Bộ cùng tỏa sáng.",
+        bullets: [
+          "<strong>1. Miền Nam sau 1954:</strong> Tòa nhà Chính quyền Ngô Đình Diệm, xe tải quân sự và toán lính đàn áp; phía dưới là buôn làng Tây Nguyên và nhân dân đấu tranh chính trị.",
+          "<strong>2. Nghị quyết 15 (01/1959):</strong> Tòa nhà Hội nghị lần thứ 15 BCH Trung ương Đảng với các đại biểu ngồi họp xác định con đường khởi nghĩa giành chính quyền.",
+          "<strong>3. Bến Tre - Đồng Khởi (17/01/1960):</strong> Cụm nhà tranh 3 xã Định Thủy – Phước Hiệp – Bình Khánh (Mỏ Cày) rực cháy ngọn lửa Đồng Khởi, quần chúng giơ tay hô vang và đoàn thuyền nan cắm cờ trên sông.",
+          "<strong>4. Kết quả, Ý nghĩa (20/12/1960):</strong> Lễ đài thành lập Mặt trận Dân tộc Giải phóng miền Nam Việt Nam với đội ngũ cán bộ, nhân dân đứng nghiêm trang."
+        ],
+        voice: "Chào mừng quý thầy cô và các bạn đến với Sa bàn lịch sử 3D Ngọn Lửa Đồng Khởi giai đoạn 1954 - 1960. Sa bàn tái hiện 4 chặng đường lịch sử: Từ cuộc đấu tranh chính trị của nhân dân miền Nam chống chính quyền Ngô Đình Diệm sau năm 1954, đến ánh sáng Nghị quyết 15 tháng 1 năm 1959, làm bùng lên ngọn lửa Đồng Khởi tại Bến Tre ngày 17 tháng 1 năm 1960 lan rộng khắp Nam Bộ, Tây Nguyên, Trung Trung Bộ, và dẫn tới sự ra đời của Mặt trận Dân tộc Giải phóng miền Nam Việt Nam ngày 20 tháng 12 năm 1960.",
+        camPos: { x: 0, y: 17.5, z: 24.0 },
+        target: { x: 0, y: 1.0, z: 0.2 }
+      },
+      1: {
+        badge: "1",
+        period: "1954 – 1958",
+        title: "1. Miền Nam Sau 1954 (1954 – 1958)",
+        ledNote: "Đèn LED chiếu sáng khu vực chính quyền Ngô Đình Diệm, xe tải quân sự, cảnh đàn áp và khu vực Tây Nguyên.",
+        bullets: [
+          "Chính quyền Ngô Đình Diệm thực hiện chính sách đàn áp, khủng bố tàn bạo phong trào yêu nước.",
+          "Trước sảnh tòa nhà Chính quyền Ngô Đình Diệm là xe tải quân sự màu xanh rêu và đội lính cầm súng canh gác.",
+          "Ở sườn đồi Tây Nguyên và các xóm làng phía trước, nhân dân kiên trì đấu tranh chính trị, giữ gìn và phát triển lực lượng cách mạng."
+        ],
+        voice: "Giai đoạn 1: Miền Nam sau năm 1954. Mỹ dựng lên chính quyền Ngô Đình Diệm, thực hiện chính sách đàn áp, khủng bố. Trước hoàn cảnh đó, nhân dân miền Nam và đồng bào Tây Nguyên kiên cường đấu tranh chính trị đòi dân sinh, dân chủ, giữ gìn và phát triển lực lượng cách mạng.",
+        camPos: { x: -9.2, y: 6.5, z: 10.5 },
+        target: { x: -9.2, y: 1.6, z: -1.8 }
+      },
+      2: {
+        badge: "2",
+        period: "01 / 1959",
+        title: "2. Nghị Quyết 15 (Tháng 01/1959)",
+        ledNote: "Đèn LED sáng rực tại khu vực Tòa nhà Hội nghị lần thứ 15 BCH Trung ương Đảng và hàng ghế đại biểu.",
+        bullets: [
+          "Tháng 1 năm 1959, Hội nghị lần thứ 15 Ban Chấp hành Trung ương Đảng họp, phía trên tòa nhà là lá cờ đỏ sao vàng tung bay.",
+          "Bên dưới hiên tòa nhà là hàng ghế các đại biểu Trung ương đang họp bàn dưới ánh đèn LED vàng ấm.",
+          "Nghị quyết xác định con đường cơ bản của cách mạng miền Nam là khởi nghĩa giành chính quyền về tay nhân dân, mở đường cho phong trào Đồng khởi."
+        ],
+        voice: "Giai đoạn 2: Nghị quyết 15 tháng 1 năm 1959. Hội nghị lần thứ 15 Ban Chấp hành Trung ương Đảng đã xác định con đường cách mạng miền Nam là khởi nghĩa giành chính quyền về tay nhân dân, soi sáng và mở đường cho cao trào Đồng khởi bùng nổ.",
+        camPos: { x: -3.2, y: 6.0, z: 9.8 },
+        target: { x: -3.0, y: 1.5, z: -1.8 }
+      },
+      3: {
+        badge: "3",
+        period: "17 / 01 / 1960",
+        title: "3. Bến Tre – Đồng Khởi (17/01/1960)",
+        ledNote: "Đèn LED nháy sáng rực rỡ tượng trưng cho ngọn lửa Đồng khởi tại khu vực 3 xã Định Thủy – Phước Hiệp – Bình Khánh và dòng sông Nam Bộ.",
+        bullets: [
+          "Ngày 17/01/1960, Đồng khởi nổ ra tại 3 xã <strong>Định Thủy – Phước Hiệp – Bình Khánh (Mỏ Cày, Bến Tre)</strong>.",
+          "Giữa hai ngôi nhà tranh miền Tây là ngọn lửa Đồng khởi bốc cao, quần chúng nhân dân cầm vũ khí, giơ cao tay phất cờ đỏ sao vàng.",
+          "Dưới dòng sông Nam Bộ xanh biếc là đoàn thuyền nan cắm cờ cách mạng nối đuôi nhau vượt qua các cây cầu gỗ, bên cạnh cánh đồng lúa chín vàng."
+        ],
+        voice: "Giai đoạn 3: Bến Tre Đồng Khởi ngày 17 tháng 1 năm 1960. Từ ba xã Định Thủy, Phước Hiệp, Bình Khánh thuộc huyện Mỏ Cày, tỉnh Bến Tre, nhân dân đồng loạt nổi dậy phá thế kìm kẹp. Ngọn lửa Đồng Khởi nhanh chóng lan rộng khắp Nam Bộ, Tây Nguyên và một số nơi ở Trung Trung Bộ.",
+        camPos: { x: 3.2, y: 6.2, z: 11.2 },
+        target: { x: 2.8, y: 1.2, z: -0.2 }
+      },
+      4: {
+        badge: "4",
+        period: "20 / 12 / 1960",
+        title: "4. Kết Quả, Ý Nghĩa – Thành Lập Mặt Trận (20/12/1960)",
+        ledNote: "Đèn LED sáng toàn bộ khu vực lễ đài Mặt trận Dân tộc Giải phóng miền Nam Việt Nam trên đồi đất đỏ cam phía trước.",
+        bullets: [
+          "Phong trào Đồng khởi giáng đòn nặng nề vào chính sách thực dân mới của Mỹ – Diệm, làm tan rã bộ máy chính quyền địch ở cơ sở.",
+          "Đưa cách mạng miền Nam bước nhảy vọt: chuyển từ thế giữ gìn lực lượng sang thế tiến công.",
+          "Ngày <strong>20/12/1960</strong>, <strong>Mặt trận Dân tộc Giải phóng miền Nam Việt Nam</strong> chính thức được thành lập trước lễ đài cờ đỏ sao vàng rực rỡ."
+        ],
+        voice: "Giai đoạn 4: Kết quả và ý nghĩa lịch sử. Thắng lợi của phong trào Đồng khởi đã giáng đòn mạnh vào chính quyền Mỹ - Diệm, chuyển cách mạng miền Nam từ thế giữ gìn lực lượng sang thế tiến công. Đỉnh cao là ngày 20 tháng 12 năm 1960, Mặt trận Dân tộc Giải phóng miền Nam Việt Nam được thành lập.",
+        camPos: { x: 8.5, y: 7.5, z: 12.2 },
+        target: { x: 6.2, y: 1.4, z: 2.8 }
+      }
+    };
+
+    // =========================================================================
+    // KHỞI TẠO SCENE THREE.JS
+    // =========================================================================
+    const container = document.getElementById('canvas-container');
+    const labelsContainer = document.getElementById('labels-container');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0b1528);
+    scene.fog = new THREE.FogExp2(0x0b1528, 0.008);
+
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 200);
+    camera.position.set(0, 17.5, 24.0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.18;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI / 2 - 0.02;
+    controls.minDistance = 3.0;
+    controls.maxDistance = 48;
+    controls.target.set(0, 1.0, 0.2);
+
+    let camAnim = null;
+    controls.addEventListener('start', () => { camAnim = null; });
+
+    // Ánh sáng
+    const ambientLight = new THREE.AmbientLight(0xfff8eb, 0.75);
+    scene.add(ambientLight);
+
+    const hemiLight = new THREE.HemisphereLight(0xfffbeb, 0x1e293b, 0.65);
+    hemiLight.position.set(0, 35, 0);
+    scene.add(hemiLight);
+
+    const mainSunLight = new THREE.DirectionalLight(0xfff5e6, 1.35);
+    mainSunLight.position.set(10, 26, 18);
+    mainSunLight.castShadow = true;
+    mainSunLight.shadow.mapSize.width = 2048;
+    mainSunLight.shadow.mapSize.height = 2048;
+    mainSunLight.shadow.camera.near = 1;
+    mainSunLight.shadow.camera.far = 75;
+    const d = 19;
+    mainSunLight.shadow.camera.left = -d;
+    mainSunLight.shadow.camera.right = d;
+    mainSunLight.shadow.camera.top = d;
+    mainSunLight.shadow.camera.bottom = -d;
+    mainSunLight.shadow.bias = -0.0005;
+    scene.add(mainSunLight);
+
+    const dioramaGroup = new THREE.Group();
+    scene.add(dioramaGroup);
+
+    // Danh sách các phần tử chuyển động
+    const animatedFlags = [];
+    const animatedPalmCrowns = [];
+    const animatedBoats = [];
+    const animatedPeople = [];
+    const fireParticles = [];
+    const stageLedLights = { 1: [], 2: [], 3: [], 4: [] };
+    let grassMaterial = null;
+    let waterMaterial = null;
+    let isCombatActive = true;
+    let isNightMode = false;
+    let targetAmbientIntensity = 0.75;
+    let targetSunIntensity = 1.35;
+    let targetExposure = 1.18;
+
+    function createRadialGlowTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64; canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createRadialGradient(32, 32, 2, 32, 32, 30);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.35, 'rgba(255, 210, 90, 0.9)');
+      grad.addColorStop(0.7, 'rgba(255, 120, 0, 0.35)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 64, 64);
+      return new THREE.CanvasTexture(canvas);
+    }
+    const sharedGlowTex = createRadialGlowTexture();
+
+    // Hàm tạo Biển chữ текстура (Banner / Biển tên tòa nhà / Biển gỗ địa danh)
+    function createSignTexture(lines, options = {}) {
+      const {
+        width = 512,
+        height = 180,
+        bgColor = '#f5ecd7',
+        borderColor = '#b45309',
+        textColor = '#991b1b',
+        subTextColor = '#1e293b',
+        fontSize = 36
+      } = options;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 8;
+      ctx.strokeRect(6, 6, width - 12, height - 12);
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const step = height / (lines.length + 1);
+      lines.forEach((line, i) => {
+        ctx.fillStyle = i === 0 ? textColor : subTextColor;
+        const sz = i === 0 ? fontSize : Math.round(fontSize * 0.78);
+        ctx.font = `800 ${sz}px "Be Vietnam Pro", sans-serif`;
+        ctx.fillText(line, width / 2, step * (i + 1));
+      });
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.needsUpdate = true;
+      return tex;
+    }
+
+    // =========================================================================
+    // ĐỊA HÌNH CHUẨN 100% THEO MÔ HÌNH SA BÀN THỰC TẾ TRÊN LỚP HỌC
+    // =========================================================================
+    function isInsideCentralWaterBay(x, z) {
+      // Hồ sông trung tâm + nhánh rạch ngăn giữa 2 đồi đất đỏ cam bên phải + kênh phía trước
+      const inCenterBasin = (
+        x > -3.4 + Math.sin(z * 0.45) * 0.55 &&
+        x < 3.6 + Math.cos(z * 0.4) * 0.45 &&
+        z > -3.4 &&
+        z < 5.6
+      );
+      const inEastChannel = (
+        x >= 2.8 &&
+        x < 7.8 &&
+        z > -0.85 + Math.sin(x * 0.5) * 0.2 &&
+        z < 0.95 + Math.sin(x * 0.5) * 0.2
+      );
+      const inSouthTrench = (
+        x > -2.5 &&
+        x < 3.5 &&
+        z >= 4.2 &&
+        z < 6.4
+      );
+      return inCenterBasin || inEastChannel || inSouthTrench;
+    }
+
+    function getPhotoReplicaTerrain(x, z) {
+      if (isInsideCentralWaterBay(x, z)) {
+        return { h: -0.42, zoneType: 'water' };
+      }
+
+      let h = 0.52;
+      let zoneType = 'green_moss';
+
+      // 1. Khối đồi núi xanh rêu lớn bên trái (x < -2.6)
+      if (x < -2.2) {
+        const leftFactor = Math.max(0, Math.min(1, (-x - 2.2) / 9.8));
+        h = 0.85 + leftFactor * 1.45;
+
+        // Đỉnh núi cao góc trái trên (Tây Bắc)
+        const nwPeak = Math.hypot((x + 10.5) / 3.8, (z + 4.2) / 3.2);
+        if (nwPeak < 1.0) {
+          h += Math.pow(Math.max(0, 1 - nwPeak), 1.35) * 2.65;
+        }
+
+        // Gò cao phía trước bên trái nơi đặt tòa nhà (Tây Nam)
+        const swPlateau = Math.hypot((x + 7.2) / 4.2, (z - 1.8) / 3.4);
+        if (swPlateau < 1.0) {
+          h = Math.max(h, 1.55 + Math.pow(Math.max(0, 1 - swPlateau), 1.5) * 0.45);
+        }
+
+        // Hõm cửa hang địa đạo ở sườn trước chân đồi trái (x ~ -3.4, z ~ 4.4)
+        const caveMouth = Math.hypot((x + 3.5) / 1.25, (z - 4.5) / 1.1);
+        if (caveMouth < 1.0) {
+          h -= Math.pow(Math.max(0, 1 - caveMouth), 1.4) * 0.75;
+          zoneType = 'cave_entrance';
+        }
+      }
+
+      // 2. Dải đồi xanh rêu sát mép sau nối từ trái qua giữa (z < -3.2)
+      if (z < -3.0 && x >= -3.5 && x < 2.2) {
+        const ridge = Math.max(0, Math.min(1, (-3.0 - z) / 3.5));
+        h = Math.max(h, 0.78 + ridge * 1.15);
+        zoneType = 'green_moss';
+      }
+
+      // 3. Khu đất đỏ cam phía trên bên phải (Khu nhà vàng + Mỏm núi nhọn góc Đông Bắc)
+      if (x >= 2.2 && z <= 0.15) {
+        h = 0.82;
+        zoneType = 'orange_clay_north';
+
+        // Mỏm núi đá xanh nhọn cao vút ở góc phải trên (Đông Bắc: x ~ 9.8, z ~ -4.8)
+        const neSpire = Math.hypot((x - 9.8) / 2.8, (z + 4.8) / 2.6);
+        if (neSpire < 1.0) {
+          h += Math.pow(Math.max(0, 1 - neSpire), 1.25) * 3.85;
+          zoneType = 'green_spire';
+        }
+      }
+
+      // 4. Khu đất đỏ cam phía dưới bên phải (Khu khán đài lễ đài Mặt trận)
+      if (x >= 2.8 && z >= 0.75) {
+        h = 0.78;
+        zoneType = 'orange_clay_south';
+      }
+
+      // Làm phẳng các mặt bằng đặt công trình để nhà đứng vững chãi, sắc nét
+      if (Math.hypot((x + 7.4) / 2.6, (z - 1.6) / 2.0) < 0.9) h = 1.82;
+      if (Math.hypot((x + 6.8) / 2.4, (z + 2.5) / 1.8) < 0.9) h = 1.95;
+      if (Math.hypot((x - 6.0) / 2.5, (z + 2.8) / 1.8) < 0.9) h = 0.92;
+      if (Math.hypot((x - 6.8) / 2.8, (z - 3.2) / 2.2) < 0.9) h = 0.86;
+
+      const microNoise = (Math.sin(x * 2.8) * Math.cos(z * 2.8) * 0.03);
+      const finalH = h + microNoise;
+      return { h: Number.isFinite(finalH) ? finalH : 0.55, zoneType };
+    }
+
+    function getTerrainHeight(x, z) {
+      return getPhotoReplicaTerrain(x, z).h;
+    }
+
+    // =========================================================================
+    // 1. DỰNG KHUNG VÁCH HỘP TRẮNG CỦA SA BÀN THỰC TẾ & NỀN GỖ
+    // =========================================================================
+    function buildSandboxFrame() {
+      // Đế sàn màu xanh dương giống tấm thảm xốp lớp học bên dưới sa bàn
+      const matFloor = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.75, metalness: 0.05 });
+      const floorMesh = new THREE.Mesh(new THREE.BoxGeometry(36.0, 0.5, 24.0), matFloor);
+      floorMesh.position.set(0, -0.95, 0);
+      floorMesh.receiveShadow = true;
+      dioramaGroup.add(floorMesh);
+
+      // 4 Vách hộp trắng cao bao quanh sa bàn đúng như ảnh chụp thực tế
+      const whiteBoardMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.35, metalness: 0.05 });
+      const goldTrimMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4, metalness: 0.3 });
+      const wallH = 1.85;
+      const wallY = 0.32;
+
+      const frontWall = new THREE.Mesh(new THREE.BoxGeometry(27.2, wallH, 0.22), whiteBoardMat);
+      frontWall.position.set(0, wallY, 7.1);
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(27.2, wallH, 0.22), whiteBoardMat);
+      backWall.position.set(0, wallY, -7.1);
+      const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.22, wallH, 14.4), whiteBoardMat);
+      leftWall.position.set(-13.5, wallY, 0);
+      const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.22, wallH, 14.4), whiteBoardMat);
+      rightWall.position.set(13.5, wallY, 0);
+
+      frontWall.castShadow = true;
+      backWall.castShadow = true;
+      leftWall.castShadow = true;
+      rightWall.castShadow = true;
+      dioramaGroup.add(frontWall, backWall, leftWall, rightWall);
+
+      // Bảng tên gắn chính giữa mặt trước vách trắng sa bàn
+      const frontPlaqueTex = createSignTexture(
+        ['SA BÀN LỊCH SỬ: NGỌN LỬA ĐỒNG KHỞI (1954 – 1960)'],
+        { width: 1024, height: 120, bgColor: '#991b1b', borderColor: '#fbbf24', textColor: '#fef08a', fontSize: 36 }
+      );
+      const frontPlaque = new THREE.Mesh(
+        new THREE.BoxGeometry(9.5, 0.85, 0.08),
+        new THREE.MeshBasicMaterial({ map: frontPlaqueTex })
+      );
+      frontPlaque.position.set(0, 0.45, 7.23);
+      dioramaGroup.add(frontPlaque);
+    }
+
+    // =========================================================================
+    // 2. DỰNG ĐỊA HÌNH ĐỒI XANH RÊU, ĐẤT ĐỎ CAM & HỒ NƯỚC TRUNG TÂM
+    // =========================================================================
+    function buildReplicaTerrainAndWater() {
+      const geo = new THREE.PlaneGeometry(26.8, 14.0, 240, 140);
+      geo.rotateX(-Math.PI / 2);
+
+      const pos = geo.attributes.position;
+      const colors = new Float32Array(pos.count * 3);
+      const c = new THREE.Color();
+
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const z = pos.getZ(i);
+        const { h, zoneType } = getPhotoReplicaTerrain(x, z);
+        pos.setY(i, h);
+
+        const n = Math.sin(x * 2.8) * Math.cos(z * 2.8) * 0.035;
+
+        if (zoneType === 'water') {
+          c.setHex(0x0284c7);
+        } else if (zoneType === 'cave_entrance') {
+          c.setHex(0x1c1917);
+        } else if (zoneType === 'orange_clay_north' || zoneType === 'orange_clay_south') {
+          // Màu đất đỏ cam đặc trưng bên phải sa bàn thực tế
+          c.setHex(0xd95f2b);
+          c.offsetHSL(0, n * 0.5, n);
+        } else if (zoneType === 'green_spire') {
+          // Mỏm núi đá rêu xanh đậm góc phải trên
+          c.setHex(0x2e4c21);
+          c.offsetHSL(0, 0, n);
+        } else {
+          // Đồi núi xanh rêu tự nhiên bên trái
+          c.setHex(0x3f5e2a);
+          c.offsetHSL(n * 0.2, n, n);
+        }
+
+        colors[i * 3] = c.r;
+        colors[i * 3 + 1] = c.g;
+        colors[i * 3 + 2] = c.b;
+      }
+
+      geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      geo.computeVertexNormals();
+
+      const terrainMesh = new THREE.Mesh(
+        geo,
+        new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.84, metalness: 0.04 })
+      );
+      terrainMesh.receiveShadow = true;
+      terrainMesh.castShadow = true;
+      dioramaGroup.add(terrainMesh);
+
+      const bedMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(26.6, 13.8),
+        new THREE.MeshBasicMaterial({ color: 0x0369a1 })
+      );
+      bedMesh.rotation.x = -Math.PI / 2;
+      bedMesh.position.y = -0.35;
+      dioramaGroup.add(bedMesh);
+
+      const waterGeo = new THREE.PlaneGeometry(26.6, 13.8, 180, 100);
+      waterGeo.rotateX(-Math.PI / 2);
+
+      waterMaterial = new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: true,
+        uniforms: { uTime: { value: 0 } },
+        vertexShader: `
+          uniform float uTime;
+          varying vec3 vWorldPos;
+          varying float vWave;
+          void main() {
+            vec3 p = position;
+            float t = uTime * 2.5;
+            float w1 = sin(p.x * 2.6 - t + p.z * 2.0) * 0.038;
+            float w2 = cos(p.x * 5.0 + t * 1.3 - p.z * 4.0) * 0.022;
+            p.y += w1 + w2;
+            vWave = w1 + w2;
+            vec4 worldPosition = modelMatrix * vec4(p, 1.0);
+            vWorldPos = worldPosition.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPosition;
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          varying vec3 vWorldPos;
+          varying float vWave;
+          void main() {
+            float t = uTime * 2.2;
+            vec3 deepBlue = vec3(0.06, 0.50, 0.90);
+            vec3 lightCyan = vec3(0.28, 0.78, 1.0);
+            vec3 foamWhite = vec3(0.96, 0.99, 1.0);
+
+            float waveFactor = smoothstep(-0.03, 0.04, vWave);
+            vec3 col = mix(deepBlue, lightCyan, waveFactor);
+
+            float streak = sin(vWorldPos.x * 3.8 + sin(vWorldPos.z * 2.0) * 2.2 - t * 2.6);
+            float whiteCap = smoothstep(0.62, 0.95, streak + vWave * 6.0);
+
+            col = mix(col, foamWhite, whiteCap * 0.68);
+            gl_FragColor = vec4(col, 0.94);
+          }
+        `
+      });
+
+      const waterMesh = new THREE.Mesh(waterGeo, waterMaterial);
+      waterMesh.position.y = 0.22;
+      dioramaGroup.add(waterMesh);
+    }
+
+    // =========================================================================
+    // 3. DỰNG CÁC TÒA NHÀ SẮC NÉT, 4 CẦU QUE GỖ KEM, HANG ĐỊA ĐẠO & VÒNG TRÒN
+    // =========================================================================
+    const woodBrownMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.75 });
+    const popsicleWoodMat = new THREE.MeshStandardMaterial({ color: 0xe6c280, roughness: 0.55 });
+    const thatchMat = new THREE.MeshStandardMaterial({ color: 0x9a7b4f, roughness: 0.9 });
+    const creamWallMat = new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.45 });
+    const yellowVillaMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.4 });
+    const trimGoldMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.4 });
+    const darkRoofMat = new THREE.MeshStandardMaterial({ color: 0x7c2d12, roughness: 0.6 });
+
+    // Hàm tạo Cầu ghép bằng que gỗ kem sắc nét như mô hình thật
+    function createWoodenBridge(x, z, length, width, rotY, arch = 0.08) {
+      const group = new THREE.Group();
+      group.position.set(x, 0.42, z);
+      group.rotation.y = rotY;
+
+      const plankCount = Math.floor(length / 0.18);
+      for (let i = 0; i < plankCount; i++) {
+        const u = (i / (plankCount - 1)) - 0.5;
+        const pz = u * length;
+        const py = Math.cos(u * Math.PI) * arch;
+        const plank = new THREE.Mesh(new THREE.BoxGeometry(width, 0.045, 0.15), popsicleWoodMat);
+        plank.position.set(0, py, pz);
+        plank.castShadow = true;
+        group.add(plank);
+      }
+
+      for (let side of [-width / 2 + 0.05, width / 2 - 0.05]) {
+        const topRail = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, length), popsicleWoodMat);
+        topRail.position.set(side, arch * 0.5 + 0.36, 0);
+        const midRail = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, length), popsicleWoodMat);
+        midRail.position.set(side, arch * 0.5 + 0.18, 0);
+        group.add(topRail, midRail);
+
+        const postCount = Math.max(4, Math.floor(length / 0.5));
+        for (let p = 0; p <= postCount; p++) {
+          const pz = ((p / postCount) - 0.5) * (length - 0.12);
+          const post = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.44, 0.055), popsicleWoodMat);
+          post.position.set(side, arch * 0.5 + 0.16, pz);
+          group.add(post);
+        }
+      }
+      dioramaGroup.add(group);
+    }
+
+    function createThatchedHouse(x, z, rotY = 0, scale = 1.0, hasWarmLight = true) {
+      const y = getTerrainHeight(x, z);
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+      group.rotation.y = rotY;
+      group.scale.setScalar(scale);
+
+      for (let cx of [-0.55, 0.55]) {
+        for (let cz of [-0.42, 0.42]) {
+          const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.35, 8), woodBrownMat);
+          leg.position.set(cx, 0.17, cz);
+          group.add(leg);
+        }
+      }
+
+      const floor = new THREE.Mesh(new THREE.BoxGeometry(1.38, 0.06, 1.08), popsicleWoodMat);
+      floor.position.y = 0.32;
+      group.add(floor);
+
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(1.22, 0.65, 0.92),
+        new THREE.MeshStandardMaterial({ color: 0x855c38, roughness: 0.8 })
+      );
+      body.position.y = 0.66;
+      body.castShadow = true;
+      group.add(body);
+
+      // Khung cửa sổ & cửa chính sắc nét
+      const door = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.48, 0.04), woodBrownMat);
+      door.position.set(-0.22, 0.58, 0.46);
+      group.add(door);
+
+      if (hasWarmLight) {
+        const win = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.32, 0.32),
+          new THREE.MeshBasicMaterial({ color: 0xffe066 })
+        );
+        win.position.set(0.25, 0.66, 0.47);
+        group.add(win);
+      }
+
+      const roofLeft = new THREE.Mesh(new THREE.BoxGeometry(1.52, 0.08, 0.76), thatchMat);
+      roofLeft.position.set(0, 1.15, 0.26);
+      roofLeft.rotation.x = 0.52;
+      roofLeft.castShadow = true;
+
+      const roofRight = new THREE.Mesh(new THREE.BoxGeometry(1.52, 0.08, 0.76), thatchMat);
+      roofRight.position.set(0, 1.15, -0.26);
+      roofRight.rotation.x = -0.52;
+      roofRight.castShadow = true;
+
+      group.add(roofLeft, roofRight);
+      dioramaGroup.add(group);
+    }
+
+    function createWoodenRegionPlaque(x, z, text, rotY = 0) {
+      const y = getTerrainHeight(x, z);
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+      group.rotation.y = rotY;
+
+      const tex = createSignTexture([text], {
+        width: 360,
+        height: 110,
+        bgColor: '#451a03',
+        borderColor: '#fbbf24',
+        textColor: '#fef3c7',
+        fontSize: 42
+      });
+      const board = new THREE.Mesh(
+        new THREE.BoxGeometry(1.75, 0.55, 0.08),
+        new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5 })
+      );
+      board.position.y = 0.52;
+      board.castShadow = true;
+
+      const post1 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.52, 8), woodBrownMat);
+      post1.position.set(-0.6, 0.25, 0);
+      const post2 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.52, 8), woodBrownMat);
+      post2.position.set(0.6, 0.25, 0);
+
+      group.add(board, post1, post2);
+      dioramaGroup.add(group);
+    }
+
+    function createGroundLedBulb(x, z, stageId = 1, intensity = 0.9) {
+      const y = Math.max(0.25, getTerrainHeight(x, z));
+      const bulb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08, 10, 10),
+        new THREE.MeshBasicMaterial({ color: 0xfff3b0 })
+      );
+      bulb.position.set(x, y + 0.06, z);
+      dioramaGroup.add(bulb);
+
+      const sprite = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: sharedGlowTex,
+          color: 0xffb703,
+          transparent: true,
+          opacity: 0.85,
+          blending: THREE.AdditiveBlending
+        })
+      );
+      sprite.scale.set(0.68, 0.68, 1);
+      sprite.position.set(x, y + 0.1, z);
+      dioramaGroup.add(sprite);
+
+      const ptLight = new THREE.PointLight(0xffaa00, intensity, 5.0);
+      ptLight.position.set(x, y + 0.38, z);
+      dioramaGroup.add(ptLight);
+
+      if (stageLedLights[stageId]) {
+        stageLedLights[stageId].push({ ptLight, sprite, baseIntensity: intensity });
+      }
+    }
+
+    function buildPhotoReplicaStructures() {
+      const winLitMat = new THREE.MeshBasicMaterial({ color: 0xffe599 });
+
+      // =====================================================================
+      // 1. TÒA NHÀ ĐỒN ĐỊCH / CHÍNH QUYỀN NGÔ ĐÌNH DIỆM (Nằm trên đồi trái phía trước đúng vị trí nhà hộp có cờ vàng trong ảnh chụp lớp học)
+      // =====================================================================
+      const k1X = -7.4, k1Z = 1.6;
+      const k1Y = getTerrainHeight(k1X, k1Z);
+      const k1Group = new THREE.Group();
+      k1Group.position.set(k1X, k1Y, k1Z);
+      k1Group.rotation.y = 0.28;
+
+      // Bậc thềm que gỗ kem bao quanh chân tòa nhà giống hệt ảnh
+      const k1Deck = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.14, 2.2), popsicleWoodMat);
+      k1Deck.position.y = 0.07;
+      k1Deck.castShadow = true;
+      k1Group.add(k1Deck);
+
+      // Thân tòa nhà 2 tầng sắc nét
+      const k1Body = new THREE.Mesh(new THREE.BoxGeometry(3.0, 1.55, 1.65), creamWallMat);
+      k1Body.position.y = 0.84;
+      k1Body.castShadow = true;
+      k1Group.add(k1Body);
+
+      const k1Roof = new THREE.Mesh(new THREE.BoxGeometry(3.25, 0.18, 1.85), darkRoofMat);
+      k1Roof.position.y = 1.68;
+      k1Group.add(k1Roof);
+
+      // Hàng cột mặt tiền & lan can tầng 2 sắc nét
+      for (let cx = -1.2; cx <= 1.2; cx += 0.6) {
+        const col = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.55, 0.16), trimGoldMat);
+        col.position.set(cx, 0.84, 0.82);
+        k1Group.add(col);
+      }
+      for (let wx = -0.9; wx <= 0.9; wx += 0.6) {
+        const wMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.45), winLitMat);
+        wMesh1.position.set(wx, 0.55, 0.84);
+        const wMesh2 = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.45), winLitMat);
+        wMesh2.position.set(wx, 1.22, 0.84);
+        k1Group.add(wMesh1, wMesh2);
+      }
+
+      const k1SignTex = createSignTexture(['CHÍNH QUYỀN', 'NGÔ ĐÌNH DIỆM'], {
+        bgColor: '#fef3c7', borderColor: '#b45309', textColor: '#7c2d12', subTextColor: '#7c2d12', fontSize: 40
+      });
+      const k1Sign = new THREE.Mesh(
+        new THREE.BoxGeometry(2.3, 0.65, 0.1),
+        new THREE.MeshBasicMaterial({ map: k1SignTex })
+      );
+      k1Sign.position.set(0, 2.05, 0.6);
+      k1Group.add(k1Sign);
+
+      // Cờ vàng 3 sọc đỏ cắm trên nóc tòa nhà đồn địch đúng như bức ảnh lớp học
+      const sgPole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.9, 8), popsicleWoodMat);
+      sgPole.position.set(0, 2.15, 0);
+      const sgCanvas = document.createElement('canvas');
+      sgCanvas.width = 128; sgCanvas.height = 85;
+      const sgCtx = sgCanvas.getContext('2d');
+      sgCtx.fillStyle = '#facc15'; sgCtx.fillRect(0, 0, 128, 85);
+      sgCtx.fillStyle = '#dc2626';
+      sgCtx.fillRect(0, 26, 128, 7);
+      sgCtx.fillRect(0, 39, 128, 7);
+      sgCtx.fillRect(0, 52, 128, 7);
+      const sgFlag = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.65, 0.42),
+        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sgCanvas), side: THREE.DoubleSide })
+      );
+      sgFlag.position.set(0.32, 2.42, 0);
+      k1Group.add(sgPole, sgFlag);
+
+      dioramaGroup.add(k1Group);
+      createGroundLedBulb(k1X + 1.2, k1Z + 1.2, 1, 1.4);
+
+      // Cửa hang địa đạo tối dưới chân đồi bên trái (đúng vị trí hõm hang trong ảnh)
+      const caveArch = new THREE.Mesh(
+        new THREE.TorusGeometry(0.58, 0.18, 10, 18, Math.PI),
+        new THREE.MeshStandardMaterial({ color: 0x2e4021, roughness: 0.9 })
+      );
+      caveArch.position.set(-3.5, 0.55, 4.55);
+      caveArch.rotation.y = 0.25;
+      const caveDark = new THREE.Mesh(
+        new THREE.CircleGeometry(0.55, 16),
+        new THREE.MeshBasicMaterial({ color: 0x09090b })
+      );
+      caveDark.position.set(-3.5, 0.55, 4.52);
+      caveDark.rotation.y = 0.25;
+      dioramaGroup.add(caveArch, caveDark);
+
+      // =====================================================================
+      // 2. TÒA NHÀ HỘI NGHỊ TRUNG ƯƠNG 15 (01/1959) (Trên đỉnh đồi phía Bắc bên trái)
+      // =====================================================================
+      const k2X = -6.8, k2Z = -2.5;
+      const k2Y = getTerrainHeight(k2X, k2Z);
+      const k2Group = new THREE.Group();
+      k2Group.position.set(k2X, k2Y, k2Z);
+      k2Group.rotation.y = 0.15;
+
+      const k2Body = new THREE.Mesh(new THREE.BoxGeometry(3.5, 1.45, 1.4), creamWallMat);
+      k2Body.position.y = 0.72;
+      k2Body.castShadow = true;
+      k2Group.add(k2Body);
+
+      const k2Roof = new THREE.Mesh(new THREE.BoxGeometry(3.75, 0.18, 1.6), darkRoofMat);
+      k2Roof.position.y = 1.52;
+      k2Group.add(k2Roof);
+
+      for (let cx = -1.35; cx <= 1.35; cx += 0.675) {
+        const col = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.45, 0.16), trimGoldMat);
+        col.position.set(cx, 0.72, 0.7);
+        k2Group.add(col);
+      }
+
+      const k2SignTex = createSignTexture(
+        ['HỘI NGHỊ LẦN THỨ 15', 'BAN CHẤP HÀNH TRUNG ƯƠNG ĐẢNG (01-1959)'],
+        { width: 640, height: 180, bgColor: '#fef3c7', borderColor: '#b45309', textColor: '#991b1b', subTextColor: '#1e293b', fontSize: 32 }
+      );
+      const k2Sign = new THREE.Mesh(
+        new THREE.BoxGeometry(2.7, 0.74, 0.1),
+        new THREE.MeshBasicMaterial({ map: k2SignTex })
+      );
+      k2Sign.position.set(0, 1.88, 0.55);
+      k2Group.add(k2Sign);
+
+      const confTable = new THREE.Mesh(
+        new THREE.BoxGeometry(2.3, 0.22, 0.42),
+        new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.5 })
+      );
+      confTable.position.set(0, 0.12, 1.15);
+      k2Group.add(confTable);
+
+      dioramaGroup.add(k2Group);
+      createWavingFlag(k2X + 1.2, k2Y + 1.6, k2Z, 1.4, 'vn', 0.85);
+      createGroundLedBulb(k2X, k2Z + 1.3, 2, 1.5);
+
+      // =====================================================================
+      // 3. TÒA NHÀ MÀU VÀNG 2 GIAN SẮC NÉT & KHU ĐỒNG KHỞI BẾN TRE (Đúng vị trí ngôi nhà màu vàng trên nền đất đỏ cam phía trên bên phải trong ảnh)
+      // =====================================================================
+      const k3X = 6.0, k3Z = -2.8;
+      const k3Y = getTerrainHeight(k3X, k3Z);
+      const k3Group = new THREE.Group();
+      k3Group.position.set(k3X, k3Y, k3Z);
+      k3Group.rotation.y = -0.25;
+
+      // Ngôi nhà màu vàng rực rỡ có mái hiên & vách ngăn giữa đúng như ảnh chụp nhưng chi tiết sắc nét
+      const yellowBackWall = new THREE.Mesh(new THREE.BoxGeometry(2.9, 1.45, 0.14), yellowVillaMat);
+      yellowBackWall.position.set(0, 0.72, -0.58);
+      const yellowLeftWall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.45, 1.3), yellowVillaMat);
+      yellowLeftWall.position.set(-1.38, 0.72, 0);
+      const yellowRightWall = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.45, 1.3), yellowVillaMat);
+      yellowRightWall.position.set(1.38, 0.72, 0);
+      const yellowMidWall = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.45, 1.25), yellowVillaMat);
+      yellowMidWall.position.set(0, 0.72, 0);
+
+      const yellowRoof = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.16, 1.58), yellowVillaMat);
+      yellowRoof.position.set(0, 1.5, 0.05);
+      yellowRoof.rotation.x = 0.08;
+      const roofRim = new THREE.Mesh(new THREE.BoxGeometry(3.28, 0.08, 1.64), trimGoldMat);
+      roofRim.position.set(0, 1.56, 0.05);
+      roofRim.rotation.x = 0.08;
+
+      k3Group.add(yellowBackWall, yellowLeftWall, yellowRightWall, yellowMidWall, yellowRoof, roofRim);
+
+      const k3SignTex = createSignTexture(['BẾN TRE - ĐỒNG KHỞI', '17 - 01 - 1960'], {
+        bgColor: '#fef3c7', borderColor: '#d97706', textColor: '#991b1b', subTextColor: '#b91c1c', fontSize: 38
+      });
+      const k3Board = new THREE.Mesh(
+        new THREE.BoxGeometry(2.4, 0.75, 0.1),
+        new THREE.MeshBasicMaterial({ map: k3SignTex })
+      );
+      k3Board.position.set(0, 1.98, 0.1);
+      k3Group.add(k3Board);
+
+      // Hàng rào gỗ đen cắm dọc mép đất đỏ cam đúng như ảnh chụp
+      const darkFenceMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+      for (let f = 0; f < 14; f++) {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.42, 0.06), darkFenceMat);
+        post.position.set(-2.2 + f * 0.28, 0.21, 1.55);
+        k3Group.add(post);
+      }
+      const fenceBar = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.05, 0.04), darkFenceMat);
+      fenceBar.position.set(-0.35, 0.28, 1.55);
+      k3Group.add(fenceBar);
+
+      dioramaGroup.add(k3Group);
+
+      // Cụm nhà tranh miền Tây cạnh khu vực Bến Tre
+      createThatchedHouse(3.5, -2.4, 0.22, 0.85, true);
+      createThatchedHouse(8.4, -1.8, -0.3, 0.85, true);
+
+      // Hiệu ứng Ngọn lửa Đồng Khởi bùng cháy rực rỡ
+      for (let f = 0; f < 24; f++) {
+        const flameMat = new THREE.SpriteMaterial({
+          map: sharedGlowTex,
+          color: f % 2 === 0 ? 0xff4500 : 0xffb703,
+          transparent: true,
+          opacity: 0.9,
+          blending: THREE.AdditiveBlending
+        });
+        const flame = new THREE.Sprite(flameMat);
+        const fx = k3X - 1.2 + (Math.random() - 0.5) * 1.8;
+        const fz = k3Z + 0.6 + (Math.random() - 0.5) * 0.8;
+        const fy = k3Y + 0.35 + Math.random() * 0.85;
+        flame.position.set(fx, fy, fz);
+        const sc = 0.6 + Math.random() * 0.7;
+        flame.scale.set(sc, sc * 1.4, 1);
+        dioramaGroup.add(flame);
+        fireParticles.push({ sprite: flame, baseY: fy, baseScale: sc, phase: Math.random() * Math.PI * 2 });
+      }
+      createWavingFlag(3.2, k3Y + 0.1, -1.6, 1.65, 'vn', 0.9);
+      createGroundLedBulb(k3X - 0.5, k3Z + 1.0, 3, 1.8);
+
+      // =====================================================================
+      // 4. KHÁN ĐÀI LỄ ĐÀI KHUNG QUE GỖ & TẤM BẢNG LỚN (Đúng vị trí khu đất đỏ cam phía dưới bên phải trong ảnh chụp lớp học)
+      // =====================================================================
+      const k4X = 6.8, k4Z = 3.2;
+      const k4Y = getTerrainHeight(k4X, k4Z);
+      const k4Group = new THREE.Group();
+      k4Group.position.set(k4X, k4Y, k4Z);
+      k4Group.rotation.y = -0.18;
+
+      // Khung giàn que gỗ kem đỡ tấm bảng lễ đài phía trước đúng như ảnh thật
+      for (let side of [-1.65, 1.65]) {
+        const frontPost = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.4, 0.1), popsicleWoodMat);
+        frontPost.position.set(side, 0.7, 0.85);
+        const backPost = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.2, 0.1), popsicleWoodMat);
+        backPost.position.set(side, 1.1, -0.35);
+        const sideBeam = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 1.35), popsicleWoodMat);
+        sideBeam.position.set(side, 0.25, 0.25);
+        const diagBrace = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 1.5), popsicleWoodMat);
+        diagBrace.position.set(side, 1.15, 0.25);
+        diagBrace.rotation.x = 0.52;
+        k4Group.add(frontPost, backPost, sideBeam, diagBrace);
+      }
+
+      // 4 Thanh ngang que gỗ kem phía trước lễ đài giống hệt ảnh
+      for (let r = 0; r < 4; r++) {
+        const rail = new THREE.Mesh(new THREE.BoxGeometry(3.45, 0.08, 0.06), popsicleWoodMat);
+        rail.position.set(0, 0.22 + r * 0.25, 0.88);
+        k4Group.add(rail);
+      }
+
+      // Tấm bảng lễ đài lớn màu hồng phấn / đỏ cờ Mặt trận Dân tộc Giải phóng sắc nét
+      const boardMat = new THREE.MeshStandardMaterial({ color: 0xfce7f3, roughness: 0.35 });
+      const mainBoard = new THREE.Mesh(new THREE.BoxGeometry(3.35, 2.15, 0.12), boardMat);
+      mainBoard.position.set(0, 1.15, -0.32);
+      mainBoard.castShadow = true;
+      k4Group.add(mainBoard);
+
+      const k4SignTex = createSignTexture(
+        ['MẶT TRẬN DÂN TỘC', 'GIẢI PHÓNG MIỀN NAM VIỆT NAM', '20 - 12 - 1960'],
+        { width: 640, height: 360, bgColor: '#fdf2f8', borderColor: '#d97706', textColor: '#991b1b', subTextColor: '#1e293b', fontSize: 38 }
+      );
+      const k4FrontFace = new THREE.Mesh(
+        new THREE.PlaneGeometry(3.15, 1.95),
+        new THREE.MeshBasicMaterial({ map: k4SignTex })
+      );
+      k4FrontFace.position.set(0, 1.15, -0.25);
+      k4Group.add(k4FrontFace);
+
+      dioramaGroup.add(k4Group);
+      createWavingFlag(3.8, k4Y, 2.4, 1.45, 'front', 0.85);
+      createGroundLedBulb(k4X, k4Z + 1.3, 4, 1.5);
+
+      // =====================================================================
+      // 5. BỐN CÂY CẦU QUE GỖ KEM & VÒNG TRÒN CÔNG SỰ TRẮNG GIỮA SÔNG ĐÚNG NHƯ ẢNH
+      // =====================================================================
+      // Cầu 1: Bắc chéo từ sườn đồi xanh bên trái xuống bờ hồ
+      createWoodenBridge(-3.6, -1.6, 3.1, 0.88, -0.62, 0.1);
+      // Cầu 2: Bắc ngang phía trên nối đồi xanh sang khu đất đỏ cam phía Bắc
+      createWoodenBridge(-0.4, -3.1, 3.2, 0.88, Math.PI / 2 + 0.15, 0.08);
+      // Cầu 3: Bắc dọc nối 2 khu đất đỏ cam (qua kênh nước bên phải)
+      createWoodenBridge(4.4, 0.05, 2.3, 0.82, 0.08, 0.08);
+      // Cầu 4: Cây cầu que gỗ dài nằm ngang sát mép trước sa bàn
+      createWoodenBridge(0.4, 5.4, 4.4, 0.92, Math.PI / 2, 0.06);
+
+      // Vòng tròn công sự trắng nằm dưới lòng sông phía trước cầu số 4 đúng như bức ảnh
+      const whiteRing = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.75, 0.75, 0.35, 32, 1, true),
+        new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3, side: THREE.DoubleSide })
+      );
+      whiteRing.position.set(-0.2, 0.32, 3.7);
+      dioramaGroup.add(whiteRing);
+
+      createWoodenRegionPlaque(-9.5, 4.2, 'TÂY NGUYÊN', 0.15);
+      createWoodenRegionPlaque(9.6, -2.5, 'TRUNG TRUNG BỘ', -0.2);
+
+      const ledCoords = [
+        [-9.5, 2.5, 1], [-5.2, 2.2, 1], [-8.2, -1.2, 2], [-4.5, -1.8, 2],
+        [3.5, -1.2, 3], [6.2, -1.2, 3], [4.5, 2.2, 4], [8.5, 2.5, 4]
+      ];
+      ledCoords.forEach(([lx, lz, stg]) => createGroundLedBulb(lx, lz, stg, 0.7));
+    }
+
+    // =========================================================================
+    // 4. SIÊU CHI TIẾT CỎ, LÚA CHÍN VÀNG & RỪNG DỪA BẾN TRE
+    // =========================================================================
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4028, roughness: 0.9 });
+    const palmLeafMat = new THREE.MeshStandardMaterial({ color: 0x2d6a22, roughness: 0.6, side: THREE.DoubleSide });
+
+    function buildDetailedGrassAndTrees() {
+      const bladeGeo = new THREE.BufferGeometry();
+      const verts = new Float32Array([
+        -0.025, 0.0, 0.0,
+         0.025, 0.0, 0.0,
+        -0.016, 0.16, 0.01,
+         0.016, 0.16, 0.01,
+         0.0,   0.32, 0.025
+      ]);
+      const uvs = new Float32Array([0, 0, 1, 0, 0, 0.5, 1, 0.5, 0.5, 1]);
+      bladeGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+      bladeGeo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+      bladeGeo.setIndex([0, 1, 2, 2, 1, 3, 2, 3, 4]);
+      bladeGeo.computeVertexNormals();
+
+      grassMaterial = new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        uniforms: { uTime: { value: 0 } },
+        vertexShader: `
+          uniform float uTime;
+          varying vec2 vUv;
+          varying vec3 vColor;
+          void main() {
+            vUv = uv;
+            vColor = instanceColor;
+            vec3 pos = position;
+            vec4 worldRoot = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+            float sway = sin(uTime * 3.2 + worldRoot.x * 1.1 + worldRoot.z * 0.9) * 0.065 * uv.y * uv.y;
+            pos.x += sway;
+            pos.z += sway * 0.5;
+            gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(pos, 1.0);
+          }
+        `,
+        fragmentShader: `
+          varying vec2 vUv;
+          varying vec3 vColor;
+          void main() {
+            vec3 bottomCol = vColor * 0.52;
+            vec3 topCol = vColor * 1.32 + vec3(0.05, 0.07, 0.01);
+            gl_FragColor = vec4(mix(bottomCol, topCol, vUv.y), 1.0);
+          }
+        `
+      });
+
+      const count = 16000;
+      const instancedGrass = new THREE.InstancedMesh(bladeGeo, grassMaterial, count);
+      const dummy = new THREE.Object3D();
+      const col = new THREE.Color();
+
+      let idx = 0;
+      for (let attempt = 0; attempt < count * 3 && idx < count; attempt++) {
+        const x = (Math.random() - 0.5) * 27.4;
+        const z = (Math.random() - 0.5) * 15.2;
+        const { h, zoneType } = getPhotoReplicaTerrain(x, z);
+
+        if (zoneType === 'water' || zoneType === 'plaza' || zoneType === 'dirt_path') continue;
+        if (h < 0.3) continue;
+
+        dummy.position.set(x, h - 0.02, z);
+        dummy.rotation.set(0, Math.random() * Math.PI * 2, 0);
+        const s = zoneType === 'rice_field' ? 1.15 : (0.75 + Math.random() * 0.85);
+        dummy.scale.set(s, s * (0.85 + Math.random() * 0.5), s);
+        dummy.updateMatrix();
+        instancedGrass.setMatrixAt(idx, dummy.matrix);
+
+        if (zoneType === 'rice_field') {
+          col.setHSL(0.13 + Math.random() * 0.02, 0.88, 0.48 + Math.random() * 0.08);
+        } else {
+          col.setHSL(0.26 + Math.random() * 0.07, 0.72, 0.24 + Math.random() * 0.12);
+        }
+        instancedGrass.setColorAt(idx, col);
+        idx++;
+      }
+
+      instancedGrass.count = idx;
+      instancedGrass.instanceMatrix.needsUpdate = true;
+      instancedGrass.instanceColor.needsUpdate = true;
+      dioramaGroup.add(instancedGrass);
+    }
+
+    function createCoconutPalm(x, z, scale = 1.0) {
+      const { h, zoneType } = getPhotoReplicaTerrain(x, z);
+      if (zoneType === 'water' || h < 0.25) return;
+      const group = new THREE.Group();
+      group.position.set(x, h, z);
+
+      const segments = 6;
+      const segHeight = 0.34 * scale;
+      let curX = 0, curY = 0, curZ = 0;
+      const leanX = (Math.random() - 0.5) * 0.08 * scale;
+      const leanZ = (Math.random() - 0.5) * 0.08 * scale;
+
+      for (let i = 0; i < segments; i++) {
+        const seg = new THREE.Mesh(
+          new THREE.CylinderGeometry((0.08 - i * 0.008) * scale, (0.09 - i * 0.008) * scale, segHeight, 7),
+          trunkMat
+        );
+        curX += leanX * (i * 0.4);
+        curZ += leanZ * (i * 0.4);
+        seg.position.set(curX, curY + segHeight * 0.5, curZ);
+        seg.castShadow = true;
+        group.add(seg);
+        curY += segHeight * 0.95;
+      }
+
+      const crownGroup = new THREE.Group();
+      crownGroup.position.set(curX, curY, curZ);
+      for (let f = 0; f < 9; f++) {
+        const angle = (f / 9) * Math.PI * 2 + (Math.random() * 0.2);
+        const frondGroup = new THREE.Group();
+        frondGroup.rotation.y = angle;
+        frondGroup.rotation.z = 0.18 + (f % 2) * 0.18;
+
+        const innerLeaf = new THREE.Mesh(new THREE.BoxGeometry(0.42 * scale, 0.018, 0.16 * scale), palmLeafMat);
+        innerLeaf.position.set(0.21 * scale, 0.04 * scale, 0);
+        innerLeaf.rotation.z = 0.12;
+
+        const outerLeaf = new THREE.Mesh(new THREE.BoxGeometry(0.44 * scale, 0.015, 0.13 * scale), palmLeafMat);
+        outerLeaf.position.set(0.58 * scale, -0.06 * scale, 0);
+        outerLeaf.rotation.z = -0.38;
+
+        frondGroup.add(innerLeaf, outerLeaf);
+        crownGroup.add(frondGroup);
+      }
+      group.add(crownGroup);
+      animatedPalmCrowns.push({ crown: crownGroup, phase: Math.random() * Math.PI * 2, speed: 1.5 + Math.random() * 0.8 });
+
+      dioramaGroup.add(group);
+    }
+
+    // =========================================================================
+    // 5. LÁ CỜ, XE QUÂN SỰ, THUYỀN NAN CẮM CỜ & NGƯỜI DÂN, ĐẠI BIỂU, BỘ ĐỘI
+    // =========================================================================
+    function createWavingFlag(x, y, z, poleHeight = 1.8, flagType = 'vn', scale = 1.0) {
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025 * scale, 0.035 * scale, poleHeight, 8),
+        new THREE.MeshStandardMaterial({ color: 0xfef3c7, metalness: 0.5, roughness: 0.4 })
+      );
+      pole.position.y = poleHeight / 2;
+      group.add(pole);
+
+      const flagCanvas = document.createElement('canvas');
+      flagCanvas.width = 256; flagCanvas.height = 170;
+      const fCtx = flagCanvas.getContext('2d');
+
+      if (flagType === 'front') {
+        fCtx.fillStyle = '#da251d';
+        fCtx.fillRect(0, 0, 256, 85);
+        fCtx.fillStyle = '#0072bc';
+        fCtx.fillRect(0, 85, 256, 85);
+      } else {
+        fCtx.fillStyle = '#da251d';
+        fCtx.fillRect(0, 0, 256, 170);
+      }
+
+      fCtx.fillStyle = '#ffff00';
+      fCtx.beginPath();
+      const cx = 128, cy = 85, outerR = 46, innerR = 18;
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? outerR : innerR;
+        const a = (i * Math.PI) / 5 - Math.PI / 2;
+        if (i === 0) fCtx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+        else fCtx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      }
+      fCtx.closePath();
+      fCtx.fill();
+
+      const flagTex = new THREE.CanvasTexture(flagCanvas);
+      const flagMat = new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        uniforms: {
+          uMap: { value: flagTex },
+          uTime: { value: Math.random() * 10 }
+        },
+        vertexShader: `
+          uniform float uTime;
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            vec3 p = position;
+            p.z += sin(uv.x * 7.0 - uTime * 5.8) * 0.12 * uv.x;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D uMap;
+          varying vec2 vUv;
+          void main() {
+            gl_FragColor = texture2D(uMap, vUv);
+          }
+        `
+      });
+
+      animatedFlags.push(flagMat);
+
+      const fw = 1.05 * scale, fh = 0.7 * scale;
+      const flagGeo = new THREE.PlaneGeometry(fw, fh, 10, 5);
+      flagGeo.translate(fw / 2, 0, 0);
+      const flagMesh = new THREE.Mesh(flagGeo, flagMat);
+      flagMesh.position.set(0.02, poleHeight - fh * 0.55, 0);
+      group.add(flagMesh);
+
+      dioramaGroup.add(group);
+    }
+
+    function createMilitaryTruck(x, z, rotY = 0) {
+      const y = getTerrainHeight(x, z);
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+      group.rotation.y = rotY;
+
+      const oliveMat = new THREE.MeshStandardMaterial({ color: 0x3a4d2c, roughness: 0.65 });
+      const darkTireMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.85 });
+
+      const hood = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.35, 0.58), oliveMat);
+      hood.position.set(0.45, 0.32, 0);
+      const cab = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.52, 0.6), oliveMat);
+      cab.position.set(0.05, 0.42, 0);
+      const cargo = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.58, 0.64), oliveMat);
+      cargo.position.set(-0.62, 0.45, 0);
+      group.add(hood, cab, cargo);
+
+      for (let wx of [-0.82, -0.35, 0.42]) {
+        for (let wz of [-0.32, 0.32]) {
+          const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.1, 10), darkTireMat);
+          wheel.rotation.x = Math.PI / 2;
+          wheel.position.set(wx, 0.15, wz);
+          group.add(wheel);
+        }
+      }
+      dioramaGroup.add(group);
+    }
+
+    function createSampanBoat(x, z, rotY = 0, hasFlag = true) {
+      const group = new THREE.Group();
+      group.position.set(x, 0.18, z);
+      group.rotation.y = rotY;
+
+      const hull = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.14, 0.42), woodBrownMat);
+      hull.position.y = 0.05;
+      hull.castShadow = true;
+      group.add(hull);
+
+      for (let bx of [-0.35, 0.25]) {
+        const rower = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.055, 0.07, 0.24, 7),
+          new THREE.MeshStandardMaterial({ color: bx < 0 ? 0x292524 : 0x365314 })
+        );
+        rower.position.set(bx, 0.22, 0);
+        const head = new THREE.Mesh(
+          new THREE.SphereGeometry(0.05, 8, 8),
+          new THREE.MeshStandardMaterial({ color: 0xfdba74 })
+        );
+        head.position.set(bx, 0.38, 0);
+        group.add(rower, head);
+      }
+
+      if (hasFlag) {
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.65, 6), new THREE.MeshBasicMaterial({ color: 0xfef3c7 }));
+        pole.position.set(0.55, 0.38, 0);
+        const miniFlag = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.38, 0.24),
+          new THREE.MeshBasicMaterial({ color: 0xdc2626, side: THREE.DoubleSide })
+        );
+        miniFlag.position.set(0.74, 0.58, 0);
+        group.add(pole, miniFlag);
+      }
+
+      dioramaGroup.add(group);
+      animatedBoats.push({
+        group,
+        baseX: x,
+        baseZ: z,
+        baseRotY: rotY,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    function createPersonFigure(x, z, role = 'uprising', rotY = 0) {
+      const h = getTerrainHeight(x, z);
+      const y = Math.max(0.22, h);
+
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+      group.rotation.y = rotY;
+
+      let uniformCol = 0x3f6212;
+      if (role === 'delegate') uniformCol = 0x1e293b;
+      else if (role === 'uprising') uniformCol = 0x44403c;
+      else if (role === 'saigon') uniformCol = 0x4b5320;
+      else if (role === 'highlander') uniformCol = 0x7c2d12;
+
+      const bodyMat = new THREE.MeshStandardMaterial({ color: uniformCol, roughness: 0.7 });
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xfdba74, roughness: 0.5 });
+
+      const torsoH = role === 'delegate' ? 0.24 : 0.32;
+      const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.08, torsoH, 7), bodyMat);
+      torso.position.y = torsoH / 2 + 0.06;
+      torso.castShadow = true;
+      group.add(torso);
+
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), skinMat);
+      head.position.y = torsoH + 0.14;
+      group.add(head);
+
+      const armGroup = new THREE.Group();
+      armGroup.position.set(0.06, torsoH, 0);
+
+      if (role === 'uprising') {
+        const raisedArm = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.025, 0.24, 6), bodyMat);
+        raisedArm.position.set(0.03, 0.12, 0);
+        raisedArm.rotation.z = -0.35;
+        armGroup.add(raisedArm);
+      } else if (role === 'saigon' || role === 'liberation') {
+        const rifle = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.03, 0.03), new THREE.MeshStandardMaterial({ color: 0x111827 }));
+        rifle.position.set(0.1, 0, 0.04);
+        armGroup.add(rifle);
+      }
+
+      group.add(armGroup);
+      dioramaGroup.add(group);
+
+      animatedPeople.push({
+        group,
+        armGroup,
+        baseY: y,
+        role,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // =========================================================================
+    // 6. BỐ TRÍ QUÂN DÂN, ĐẠI BIỂU, THUYỀN NAN & RỪNG DỪA THEO ĐÚNG SA BÀN MẪU
+    // =========================================================================
+    function populateReplicaBattlefield() {
+      // Xe tải quân sự & toán lính quanh tòa nhà đồn địch trên đồi trái
+      createMilitaryTruck(-9.8, 0.8, 0.35);
+      const k1Soldiers = [
+        [-6.2, 2.8], [-5.5, 2.4], [-4.8, 2.9], [-5.8, 1.5], [-4.5, 1.2],
+        [-5.2, 0.5], [-4.2, 0.2], [-6.5, 3.6], [-5.4, 3.8]
+      ];
+      k1Soldiers.forEach(([sx, sz]) => createPersonFigure(sx, sz, 'saigon', 0.6));
+
+      // Đồng bào Tây Nguyên & lực lượng cách mạng trên sườn đồi trái
+      const tayNguyenPeople = [
+        [-10.5, 3.2], [-9.6, 3.8], [-8.8, 4.2], [-11.2, 1.5], [-10.8, -0.5]
+      ];
+      tayNguyenPeople.forEach(([px, pz]) => createPersonFigure(px, pz, 'highlander', 0.4));
+
+      // Đại biểu dự Hội nghị Trung ương 15 trên đồi Bắc
+      for (let dx = -7.8; dx <= -5.8; dx += 0.4) {
+        createPersonFigure(dx, -1.3, 'delegate', 0);
+        createPersonFigure(dx, -0.85, 'delegate', Math.PI);
+      }
+
+      // Quần chúng nhân dân Đồng Khởi & bộ đội tại khu đất đỏ cam phía trên (nhà vàng) và dưới lòng sông
+      const benTreCrowd = [
+        [4.2, -1.5], [4.8, -1.2], [5.5, -1.4], [6.4, -1.3], [7.2, -1.5],
+        [0.8, -2.2], [1.5, -1.8], [2.2, -1.5], [-1.2, -0.8], [-0.4, -0.2],
+        [0.5, 0.4], [1.4, 0.8], [-1.5, 1.2], [-0.5, 1.8], [0.8, 2.1], [1.8, 1.6]
+      ];
+      benTreCrowd.forEach(([bx, bz]) => createPersonFigure(bx, bz, 'uprising', -0.4));
+
+      // Đội ngũ đại biểu & Quân giải phóng trước Lễ đài khu đất đỏ cam phía dưới
+      for (let fx = 5.2; fx <= 8.4; fx += 0.45) {
+        createPersonFigure(fx, 4.6, 'liberation', Math.PI);
+        createPersonFigure(fx, 5.2, 'uprising', Math.PI);
+      }
+
+      // Thuyền nan cắm cờ trên hồ sông trung tâm
+      createSampanBoat(-1.5, 0.2, 0.35, true);
+      createSampanBoat(0.6, -0.6, -0.25, true);
+      createSampanBoat(1.6, 1.2, 0.4, true);
+      createSampanBoat(-1.2, 2.4, 0.15, false);
+      createSampanBoat(1.4, 2.9, -0.3, true);
+
+      // Các lá cờ đỏ sao vàng cắm dọc sườn núi trái & đất đỏ cam đúng như ảnh chụp
+      createWavingFlag(-11.8, getTerrainHeight(-11.8, 0.8), 0.8, 1.4, 'vn', 0.8);
+      createWavingFlag(-11.2, getTerrainHeight(-11.2, -3.5), -3.5, 1.4, 'vn', 0.8);
+      createWavingFlag(-8.2, getTerrainHeight(-8.2, -4.8), -4.8, 1.4, 'vn', 0.8);
+      createWavingFlag(-5.2, getTerrainHeight(-5.2, -3.2), -3.2, 1.35, 'vn', 0.8);
+      createWavingFlag(8.5, getTerrainHeight(8.5, -1.2), -1.2, 1.35, 'front', 0.8);
+
+      // Rừng dừa và cây cối xanh tươi sắc nét trên đồi và ven sông
+      const palmLocations = [
+        [-11.8, 2.8], [-10.5, 4.5], [-8.8, 0.2], [-9.5, -1.5],
+        [-10.8, -2.8], [-8.5, -3.8], [-5.2, -4.2], [-3.8, -3.5],
+        [-2.2, -3.8], [0.8, -3.8], [2.8, -3.5], [8.2, -3.8],
+        [9.5, -3.5], [10.8, -2.2], [9.2, 1.8], [10.5, 3.5],
+        [-4.5, 3.8], [-5.8, 4.8]
+      ];
+      palmLocations.forEach(([tx, tz]) => createCoconutPalm(tx, tz, 0.82 + Math.random() * 0.32));
+    }
+
+    // =========================================================================
+    // 7. NHÃN THÔNG TIN NỔI 3D TRÊN 4 KHU VỰC SA BÀN
+    // =========================================================================
+    const floatingMarkers = [
+      {
+        id: 1,
+        num: "1",
+        title: "1. MIỀN NAM SAU 1954",
+        sub: "Đồn địch trên đồi • Hang địa đạo • Đấu tranh chính trị",
+        pos3D: new THREE.Vector3(-7.4, 4.4, 1.6)
+      },
+      {
+        id: 2,
+        num: "2",
+        title: "2. NGHỊ QUYẾT 15 (01/1959)",
+        sub: "Hội nghị Trung ương 15 • Mở đường Đồng khởi",
+        pos3D: new THREE.Vector3(-6.8, 4.3, -2.5)
+      },
+      {
+        id: 3,
+        num: "3",
+        title: "3. BẾN TRE - ĐỒNG KHỞI",
+        sub: "17/01/1960 • Khu nhà vàng & Sông nước trung tâm",
+        pos3D: new THREE.Vector3(6.0, 3.5, -2.8)
+      },
+      {
+        id: 4,
+        num: "4",
+        title: "4. KẾT QUẢ, Ý NGHĨA",
+        sub: "20/12/1960 • Lễ đài Mặt trận Dân tộc Giải phóng",
+        pos3D: new THREE.Vector3(6.8, 3.6, 3.2)
+      }
+    ];
+
+    const markerDOMs = [];
+    function initFloatingHTMLMarkers() {
+      labelsContainer.innerHTML = '';
+      floatingMarkers.forEach(m => {
+        const el = document.createElement('div');
+        el.className = 'marker-3d';
+        el.innerHTML = `
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-800/95 border-2 border-amber-300 shadow-xl text-white">
+            <span class="w-6 h-6 rounded-full bg-white text-red-700 font-black text-xs flex items-center justify-center shadow">${m.num}</span>
+            <div class="text-left pr-1">
+              <div class="text-[11px] font-extrabold tracking-wide text-amber-200 leading-tight">${m.title}</div>
+              <div class="text-[9px] text-slate-200 hidden sm:block">${m.sub}</div>
+            </div>
+          </div>
+          <div class="w-0.5 h-4 bg-amber-300 mx-auto"></div>
+        `;
+        el.addEventListener('click', () => selectStage(m.id));
+        labelsContainer.appendChild(el);
+        markerDOMs.push({ el, pos3D: m.pos3D });
+      });
+    }
+
+    function updateFloatingHTMLMarkers() {
+      const halfW = window.innerWidth / 2;
+      const halfH = window.innerHeight / 2;
+      markerDOMs.forEach(item => {
+        const v = item.pos3D.clone().project(camera);
+        if (v.z > 1) {
+          item.el.style.opacity = '0';
+          item.el.style.pointerEvents = 'none';
+        } else {
+          const x = (v.x * halfW) + halfW;
+          const y = -(v.y * halfH) + halfH;
+          item.el.style.left = `${x}px`;
+          item.el.style.top = `${y}px`;
+          item.el.style.opacity = '1';
+          item.el.style.pointerEvents = 'auto';
+        }
+      });
+    }
+
+    // =========================================================================
+    // 8. ĐIỀU KHIỂN CAMERA, THUYẾT MINH GIỌNG ĐỌC & TỰ ĐỘNG DẪN TRUYỆN
+    // =========================================================================
+    let currentStage = 0;
+    let isAutoTour = false;
+    let autoTourTimer = null;
+
+    function flyCameraTo(targetPos, lookAtPos, duration = 1300) {
+      camAnim = {
+        startPos: camera.position.clone(),
+        endPos: new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z),
+        startTarget: controls.target.clone(),
+        endTarget: new THREE.Vector3(lookAtPos.x, lookAtPos.y, lookAtPos.z),
+        startTime: performance.now(),
+        duration
+      };
+    }
+
+    function speakVietnamese(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'vi-VN';
+      utter.rate = 1.0;
+      const voices = window.speechSynthesis.getVoices();
+      const viVoice = voices.find(v => v.lang.includes('vi') || v.name.toLowerCase().includes('vietnam'));
+      if (viVoice) utter.voice = viVoice;
+      window.speechSynthesis.speak(utter);
+    }
+
+    window.selectStage = function(stageId) {
+      currentStage = stageId;
+      const info = STAGES_DATA[stageId] || STAGES_DATA[0];
+
+      document.getElementById('detail-badge').textContent = info.badge;
+      document.getElementById('detail-period').textContent = info.period;
+      document.getElementById('detail-title').textContent = info.title;
+      document.getElementById('detail-led-note').innerHTML = `<span class="text-base leading-none">💡</span><span>${info.ledNote}</span>`;
+      document.getElementById('detail-list').innerHTML = info.bullets
+        .map(b => `<li class="flex items-start gap-2"><span class="text-amber-400 font-bold">•</span><span>${b}</span></li>`)
+        .join('');
+
+      for (let i = 1; i <= 4; i++) {
+        const card = document.getElementById(`card-stage-${i}`);
+        if (card) card.classList.toggle('active', i === stageId);
+        if (stageLedLights[i]) {
+          stageLedLights[i].forEach(led => {
+            const activeMult = (stageId === 0 || stageId === i) ? 1.35 : 0.35;
+            led.ptLight.intensity = led.baseIntensity * activeMult;
+            led.sprite.material.opacity = (stageId === 0 || stageId === i) ? 0.95 : 0.35;
+          });
+        }
+      }
+
+      flyCameraTo(info.camPos, info.target, 1300);
+    };
+
+    document.getElementById('btn-overview').addEventListener('click', () => selectStage(0));
+
+    document.getElementById('btn-combat').addEventListener('click', () => {
+      isCombatActive = !isCombatActive;
+      document.getElementById('combat-text').textContent = isCombatActive ? 'Hiệu ứng LED & Lửa: BẬT' : 'Hiệu ứng LED & Lửa: TẮT';
+      fireParticles.forEach(fp => { fp.sprite.visible = isCombatActive; });
+    });
+
+    document.getElementById('btn-macro').addEventListener('click', () => {
+      flyCameraTo({ x: 1.5, y: 4.2, z: 8.8 }, { x: 1.8, y: 0.6, z: 2.2 }, 1300);
+    });
+
+    document.getElementById('btn-night').addEventListener('click', () => {
+      isNightMode = !isNightMode;
+      document.getElementById('night-text').textContent = isNightMode ? 'Chế độ Ban Ngày' : 'Chế độ Đêm LED';
+      targetAmbientIntensity = isNightMode ? 0.25 : 0.75;
+      targetSunIntensity = isNightMode ? 0.32 : 1.35;
+      targetExposure = isNightMode ? 0.95 : 1.18;
+      scene.background.setHex(isNightMode ? 0x040812 : 0x0b1528);
+    });
+
+    document.getElementById('btn-voice').addEventListener('click', () => {
+      const info = STAGES_DATA[currentStage] || STAGES_DATA[0];
+      speakVietnamese(info.voice);
+    });
+
+    let uiVisible = true;
+    document.getElementById('btn-toggle-ui').addEventListener('click', () => {
+      uiVisible = !uiVisible;
+      document.getElementById('info-drawer').style.transform = uiVisible ? 'translateX(0)' : 'translateX(-120%)';
+      document.getElementById('bottom-cards').style.transform = uiVisible ? 'translateY(0)' : 'translateY(120%)';
+    });
+
+    document.getElementById('btn-autotour').addEventListener('click', () => {
+      isAutoTour = !isAutoTour;
+      const btnText = document.getElementById('autotour-text');
+      if (isAutoTour) {
+        btnText.textContent = 'Dừng dẫn truyện';
+        let step = 1;
+        selectStage(step);
+        speakVietnamese(STAGES_DATA[step].voice);
+        autoTourTimer = setInterval(() => {
+          step = step < 4 ? step + 1 : 0;
+          selectStage(step);
+          speakVietnamese(STAGES_DATA[step].voice);
+          if (step === 0) {
+            clearInterval(autoTourTimer);
+            isAutoTour = false;
+            btnText.textContent = 'Tự động dẫn truyện';
+          }
+        }, 11000);
+      } else {
+        btnText.textContent = 'Tự động dẫn truyện';
+        clearInterval(autoTourTimer);
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      }
+    });
+
+    // =========================================================================
+    // 9. KHỞI CHẠY VÀ VÒNG LẶP ANIMATION 60FPS
+    // =========================================================================
+    buildSandboxFrame();
+    buildReplicaTerrainAndWater();
+    buildPhotoReplicaStructures();
+    buildDetailedGrassAndTrees();
+    populateReplicaBattlefield();
+    initFloatingHTMLMarkers();
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+
+      if (grassMaterial) grassMaterial.uniforms.uTime.value = elapsed;
+      if (waterMaterial) waterMaterial.uniforms.uTime.value = elapsed;
+      animatedFlags.forEach(mat => { mat.uniforms.uTime.value = elapsed; });
+
+      // Nội suy ánh sáng ngày / đêm mượt mà
+      ambientLight.intensity += (targetAmbientIntensity - ambientLight.intensity) * 0.05;
+      mainSunLight.intensity += (targetSunIntensity - mainSunLight.intensity) * 0.05;
+      renderer.toneMappingExposure += (targetExposure - renderer.toneMappingExposure) * 0.05;
+
+      // Nội suy chuyển động bay Camera (Quintic Smoothstep)
+      if (camAnim) {
+        const now = performance.now();
+        const t = Math.min(1, (now - camAnim.startTime) / camAnim.duration);
+        const ease = t * t * t * (t * (t * 6 - 15) + 10);
+        camera.position.lerpVectors(camAnim.startPos, camAnim.endPos, ease);
+        controls.target.lerpVectors(camAnim.startTarget, camAnim.endTarget, ease);
+        if (t >= 1) camAnim = null;
+      }
+
+      // Chuyển động tán dừa đung đưa
+      animatedPalmCrowns.forEach(p => {
+        p.crown.rotation.z = Math.sin(elapsed * p.speed + p.phase) * 0.05;
+        p.crown.rotation.x = Math.cos(elapsed * p.speed * 0.8 + p.phase) * 0.04;
+      });
+
+      // Chuyển động Thuyền nan dập dềnh trên dòng sông Nam Bộ
+      animatedBoats.forEach(b => {
+        b.group.position.y = 0.18 + Math.sin(elapsed * 2.6 + b.phase) * 0.025;
+        b.group.rotation.z = Math.sin(elapsed * 2.0 + b.phase) * 0.04;
+        b.group.position.x = b.baseX + Math.sin(elapsed * 0.6 + b.phase) * 0.18;
+      });
+
+      // Chuyển động Ngọn lửa Đồng Khởi Bến Tre bập bùng
+      if (isCombatActive) {
+        fireParticles.forEach(fp => {
+          const flicker = 0.85 + Math.sin(elapsed * 10.0 + fp.phase) * 0.25;
+          fp.sprite.scale.set(fp.baseScale * flicker, fp.baseScale * 1.45 * flicker, 1);
+          fp.sprite.position.y = fp.baseY + ((elapsed * 0.6 + fp.phase) % 0.45);
+        });
+      }
+
+      // Chuyển động Nhân dân & Bộ đội phất tay đồng khởi
+      animatedPeople.forEach(p => {
+        if (p.role === 'uprising') {
+          p.group.position.y = p.baseY + Math.abs(Math.sin(elapsed * 4.2 + p.phase)) * 0.03;
+          p.armGroup.rotation.z = Math.sin(elapsed * 6.5 + p.phase) * 0.22;
+        }
+      });
+
+      controls.update();
+      updateFloatingHTMLMarkers();
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    window.onload = function () {
+      animate();
+    };
+  </script>
+</body>
+</html>

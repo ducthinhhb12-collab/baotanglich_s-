@@ -1,0 +1,16 @@
+{
+  "name": "baotanglichsuso_3d_sansangchay",
+  "version": "1.0.0",
+  "description": "",
+  "main": "check_anchors.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.0"
+  }
+}
